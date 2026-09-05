@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"context"
 	"mime"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/gabehf/koito/engine/middleware"
 	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/db"
+	"github.com/gabehf/koito/internal/importer"
 	mbz "github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/sources"
 	"github.com/go-chi/chi/v5"
@@ -137,6 +139,14 @@ func bindRoutes(
 
 			r.Get("/export", handlers.ExportHandler(db))
 			r.Delete("/data", handlers.PurgeAllDataHandler(db))
+
+			r.With(chimiddleware.RequestSize(300 << 20)).
+				Post("/import", handlers.UploadImportHandler(
+					importer.RecognizeFilename,
+					func(ctx context.Context, filename string) error {
+						return importer.DetectAndImportFile(ctx, db, mbz, filename)
+					},
+				))
 		})
 	})
 

@@ -201,6 +201,28 @@ function updateApiKeyLabel(id: number, label: string): Promise<Response> {
   });
 }
 
+const uploadImportFile = async (file: File): Promise<UploadImportResponse> => {
+  const form = new FormData();
+  form.append("file", file);
+  const r = await fetch(`/apis/web/v1/import`, {
+    method: "POST",
+    body: form,
+  });
+  if (!r.ok) {
+    let errorMessage = `error: ${r.status}`;
+    try {
+      const errorData: ApiError = await r.json();
+      if (errorData && typeof errorData.error === "string") {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      console.error("unexpected api error:", e);
+    }
+    throw new Error(errorMessage);
+  }
+  return (await r.json()) as UploadImportResponse;
+};
+
 function getUsers(): Promise<User[]> {
   return fetch(`/apis/web/v1/users`).then((r) => r.json() as Promise<User[]>);
 }
@@ -392,6 +414,7 @@ export {
   getUsers,
   createUser,
   deleteUser,
+  uploadImportFile,
   deleteListen,
   getAlbum,
   getExport,
@@ -523,6 +546,9 @@ type ApiKey = {
 type ApiError = {
   error: string;
 };
+type UploadImportResponse = {
+  started_files: string[];
+};
 type Config = {
   default_theme: string;
   login_gate: boolean;
@@ -571,4 +597,5 @@ export type {
   Stats,
   RewindStats,
   ImageList,
+  UploadImportResponse,
 };

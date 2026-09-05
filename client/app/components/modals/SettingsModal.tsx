@@ -9,6 +9,7 @@ import { AsyncButton } from "../AsyncButton";
 import ExportModal from "./ExportModal";
 import SourcesModal from "./SourcesModal";
 import UsersModal from "./UsersModal";
+import ImportModal from "./ImportModal";
 import About from "./About";
 
 interface Props {
@@ -52,9 +53,14 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 Sources
               </TabsTrigger>
               {user.role === "admin" && (
-                <TabsTrigger className={triggerClasses} value="Users">
-                  Users
-                </TabsTrigger>
+                <>
+                  <TabsTrigger className={triggerClasses} value="Users">
+                    Users
+                  </TabsTrigger>
+                  <TabsTrigger className={triggerClasses} value="Import">
+                    Import
+                  </TabsTrigger>
+                </>
               )}
             </>
           )}
@@ -85,9 +91,14 @@ export default function SettingsModal({ open, setOpen }: Props) {
           <SourcesModal />
         </TabsContent>
         {user?.role === "admin" && (
-          <TabsContent value="Users" className={contentClasses}>
-            <UsersModal />
-          </TabsContent>
+          <>
+            <TabsContent value="Users" className={contentClasses}>
+              <UsersModal />
+            </TabsContent>
+            <TabsContent value="Import" className={contentClasses}>
+              <ImportModal />
+            </TabsContent>
+          </>
         )}
         <TabsContent value="About" className={contentClasses}>
           <About />

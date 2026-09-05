@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -295,44 +294,8 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 		if file.IsDir() {
 			continue
 		}
-		if strings.Contains(file.Name(), "Streaming_History_Audio") {
-			l.Info().Msgf("Importer: Import file %s detecting as being Spotify export", file.Name())
-			err := importer.ImportSpotifyFile(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "maloja") {
-			l.Info().Msgf("Importer: Import file %s detecting as being Maloja export", file.Name())
-			err := importer.ImportMalojaFile(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "recenttracks") {
-			l.Info().Msgf("Importer: Import file %s detecting as being ghan.nl LastFM export", file.Name())
-			err := importer.ImportLastFMFile(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "listenbrainz") {
-			l.Info().Msgf("Importer: Import file %s detecting as being ListenBrainz export", file.Name())
-			err := importer.ImportListenBrainzExport(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "koito") {
-			l.Info().Msgf("Importer: Import file %s detecting as being Koito export", file.Name())
-			err := importer.ImportKoitoFile(logger.NewContext(l), store, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "watch-history") {
-			l.Info().Msgf("Importer: Import file %s detecting as being a Google Takeout YouTube export", file.Name())
-			err := importer.ImportYoutubeTakeoutFile(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
-			}
-		} else {
-			l.Warn().Msgf("Importer: File %s not recognized as a valid import file; make sure it is valid and named correctly", file.Name())
+		if err := importer.DetectAndImportFile(logger.NewContext(l), store, mbzc, file.Name()); err != nil {
+			l.Warn().Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
 		}
 	}
 }

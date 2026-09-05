@@ -2,13 +2,63 @@ package importer
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/logger"
+	"github.com/gabehf/koito/internal/mbz"
 )
+
+// RecognizeFilename reports whether name matches one of the supported
+// export file naming conventions (used both by the startup import
+// directory scan and by the web upload endpoint, so a file is only ever
+// saved/kept if something will actually know how to import it).
+func RecognizeFilename(name string) bool {
+	switch {
+	case strings.Contains(name, "Streaming_History_Audio"),
+		strings.Contains(name, "maloja"),
+		strings.Contains(name, "recenttracks"),
+		strings.Contains(name, "listenbrainz"),
+		strings.Contains(name, "koito"),
+		strings.Contains(name, "watch-history"):
+		return true
+	default:
+		return false
+	}
+}
+
+// DetectAndImportFile dispatches filename to the importer matching its
+// naming convention. filename must already exist in the configured
+// "import" directory.
+func DetectAndImportFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+	l := logger.FromContext(ctx)
+	switch {
+	case strings.Contains(filename, "Streaming_History_Audio"):
+		l.Info().Msgf("Importer: Import file %s detecting as being Spotify export", filename)
+		return ImportSpotifyFile(ctx, store, mbzc, filename)
+	case strings.Contains(filename, "maloja"):
+		l.Info().Msgf("Importer: Import file %s detecting as being Maloja export", filename)
+		return ImportMalojaFile(ctx, store, mbzc, filename)
+	case strings.Contains(filename, "recenttracks"):
+		l.Info().Msgf("Importer: Import file %s detecting as being ghan.nl LastFM export", filename)
+		return ImportLastFMFile(ctx, store, mbzc, filename)
+	case strings.Contains(filename, "listenbrainz"):
+		l.Info().Msgf("Importer: Import file %s detecting as being ListenBrainz export", filename)
+		return ImportListenBrainzExport(ctx, store, mbzc, filename)
+	case strings.Contains(filename, "koito"):
+		l.Info().Msgf("Importer: Import file %s detecting as being Koito export", filename)
+		return ImportKoitoFile(ctx, store, filename)
+	case strings.Contains(filename, "watch-history"):
+		l.Info().Msgf("Importer: Import file %s detecting as being a Google Takeout YouTube export", filename)
+		return ImportYoutubeTakeoutFile(ctx, store, mbzc, filename)
+	default:
+		return fmt.Errorf("file %s not recognized as a valid import file; make sure it is valid and named correctly", filename)
+	}
+}
 
 // runs after every importer
 func finishImport(ctx context.Context, filename string, numImported int) error {
