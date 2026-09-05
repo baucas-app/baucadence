@@ -10,6 +10,7 @@ import (
 
 	"github.com/gabehf/koito/internal/catalog"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	mbz "github.com/gabehf/koito/internal/mbz"
 )
@@ -23,9 +24,10 @@ type SpotifyExportItem struct {
 	MsPlayed   int32     `json:"ms_played"`
 }
 
-func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) (err error) {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning spotify import on file: %s", filename)
+	defer func() { importprogress.Finish(filename, err) }()
 	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		l.Err(err).Msgf("Failed to read import file: %s", filename)
@@ -43,8 +45,10 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 	if err != nil {
 		return fmt.Errorf("ImportSpotifyFile: %w", err)
 	}
+	importprogress.SetTotal(filename, len(export))
 
 	for _, item := range export {
+		importprogress.Advance(filename)
 		if item.ReasonEnd != "trackdone" {
 			continue
 		}

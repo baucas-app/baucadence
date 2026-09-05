@@ -12,15 +12,17 @@ import (
 	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/db"
 	"github.com/gabehf/koito/internal/export"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/models"
 	"github.com/gabehf/koito/internal/utils"
 	"github.com/google/uuid"
 )
 
-func ImportKoitoFile(ctx context.Context, store importStore, filename string) error {
+func ImportKoitoFile(ctx context.Context, store importStore, filename string) (err error) {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning Koito import on file: %s", filename)
+	defer func() { importprogress.Finish(filename, err) }()
 	data := new(export.KoitoExport)
 	f, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
@@ -37,10 +39,12 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	}
 
 	l.Info().Msgf("Beginning data import for user: %s", data.User)
+	importprogress.SetTotal(filename, len(data.Listens))
 
 	count := 0
 
 	for i := range data.Listens {
+		importprogress.Advance(filename)
 		if !inImportTimeWindow(data.Listens[i].ListenedAt) {
 			l.Debug().Msgf("Skipping import due to import time rules")
 			continue

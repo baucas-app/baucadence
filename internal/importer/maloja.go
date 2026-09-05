@@ -11,6 +11,7 @@ import (
 
 	"github.com/gabehf/koito/internal/catalog"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/utils"
@@ -31,9 +32,10 @@ type MalojaTrack struct {
 	} `json:"album"`
 }
 
-func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) (err error) {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning maloja import on file: %s", filename)
+	defer func() { importprogress.Finish(filename, err) }()
 	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		l.Err(err).Msgf("Failed to read import file: %s", filename)
@@ -51,7 +53,9 @@ func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 	if err != nil {
 		return fmt.Errorf("ImportMalojaFile: %w", err)
 	}
+	importprogress.SetTotal(filename, len(export.Scrobbles))
 	for _, item := range export.Scrobbles {
+		importprogress.Advance(filename)
 		martists := make([]string, 0)
 		// Maloja has a tendency to have the the artist order ['feature', 'main \u2022 feature'], so
 		// here we try to turn that artist array into ['main', 'feature']

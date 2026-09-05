@@ -14,14 +14,19 @@ import (
 	"github.com/gabehf/koito/engine/handlers"
 	"github.com/gabehf/koito/internal/catalog"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/utils"
 	"github.com/google/uuid"
 )
 
-func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+// ImportListenBrainzExport's per-item progress isn't tracked (its .jsonl
+// files are read as a line stream with no cheap upfront count), so its
+// progress stays indeterminate (Total left at -1) until Finish.
+func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) (err error) {
 	l := logger.FromContext(ctx)
+	defer func() { importprogress.Finish(filename, err) }()
 
 	r, err := zip.OpenReader(path.Join(path.Join(cfg.ConfigDir(), "import", filename)))
 	if err != nil {

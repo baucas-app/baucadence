@@ -11,6 +11,7 @@ import (
 
 	"github.com/gabehf/koito/internal/catalog"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	mbz "github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/sourcescfg"
@@ -39,9 +40,10 @@ type youtubeTakeoutItem struct {
 // listens at poll time. Takeout, by contrast, gives the user's full
 // history with a real timestamp per entry, so it's the way to backfill
 // older listens rather than relying on the live poller alone.
-func ImportYoutubeTakeoutFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportYoutubeTakeoutFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) (err error) {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning YouTube Takeout import on file: %s", filename)
+	defer func() { importprogress.Finish(filename, err) }()
 	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		l.Err(err).Msgf("Failed to read import file: %s", filename)
@@ -60,11 +62,13 @@ func ImportYoutubeTakeoutFile(ctx context.Context, store importStore, mbzc mbz.M
 	if err := json.NewDecoder(file).Decode(&items); err != nil {
 		return fmt.Errorf("ImportYoutubeTakeoutFile: %w", err)
 	}
+	importprogress.SetTotal(filename, len(items))
 
 	trackVideos := sourcescfg.YtmusicTrackVideosEnabled()
 	imported := 0
 
 	for _, item := range items {
+		importprogress.Advance(filename)
 		isMusic := item.Header == "YouTube Music"
 		isVideo := item.Header == "YouTube"
 		if !isMusic && !isVideo {

@@ -11,6 +11,7 @@ import (
 
 	"github.com/gabehf/koito/internal/catalog"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/mbz"
 	"github.com/google/uuid"
@@ -40,9 +41,10 @@ type LastFMImage struct {
 	Url  string `json:"#text"`
 }
 
-func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) (err error) {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning LastFM import on file: %s", filename)
+	defer func() { importprogress.Finish(filename, err) }()
 	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		l.Err(err).Msgf("Failed to read import file: %s", filename)
@@ -60,9 +62,16 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 	if err != nil {
 		return fmt.Errorf("ImportLastFMFile: %w", err)
 	}
+	totalTracks := 0
+	for _, item := range export {
+		totalTracks += len(item.Track)
+	}
+	importprogress.SetTotal(filename, totalTracks)
+
 	count := 0
 	for _, item := range export {
 		for _, track := range item.Track {
+			importprogress.Advance(filename)
 			album := track.Album.Text
 			if album == "" {
 				album = track.Name

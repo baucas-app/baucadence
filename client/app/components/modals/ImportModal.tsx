@@ -1,14 +1,45 @@
-import { useRef, useState } from "react";
-import { uploadImportFile } from "api/api";
+import { useEffect, useRef, useState } from "react";
+import { uploadImportFile, getImportStatus, type ImportFileProgress } from "api/api";
 import { AsyncButton } from "../AsyncButton";
 import SubHeader from "../primitives/SubHeader";
+
+const POLL_INTERVAL_MS = 1500;
 
 export default function ImportModal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setError] = useState<string>();
-  const [startedFiles, setStartedFiles] = useState<string[]>();
+  const [progress, setProgress] = useState<ImportFileProgress[]>();
+  const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined,
+  );
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = undefined;
+    }
+  };
+
+  const pollStatus = () => {
+    getImportStatus()
+      .then((p) => {
+        setProgress(p);
+        if (p.length > 0 && p.every((f) => f.done)) {
+          stopPolling();
+        }
+      })
+      .catch(() => stopPolling());
+  };
+
+  const startPolling = () => {
+    stopPolling();
+    pollStatus();
+    pollRef.current = setInterval(pollStatus, POLL_INTERVAL_MS);
+  };
+
+  useEffect(() => stopPolling, []);
 
   const handleUpload = () => {
     if (!selectedFile) {
@@ -16,13 +47,12 @@ export default function ImportModal() {
       return;
     }
     setError(undefined);
-    setStartedFiles(undefined);
     setLoading(true);
     uploadImportFile(selectedFile)
-      .then((r) => {
-        setStartedFiles(r.started_files);
+      .then(() => {
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
+        startPolling();
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -52,11 +82,54 @@ export default function ImportModal() {
         </AsyncButton>
       </div>
       {err && <p className="error mt-3">{err}</p>}
-      {startedFiles && (
-        <p className="mt-3">
-          Import started for: {startedFiles.join(", ")}. Check back later —
-          it runs in the background.
-        </p>
+      {progress && progress.length > 0 && (
+        <div className="flex flex-col gap-3 mt-5 w-3/5">
+          {progress.map((f) => (
+            <ImportProgressRow key={f.filename} progress={f} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImportProgressRow({ progress }: { progress: ImportFileProgress }) {
+  const known = progress.total > 0;
+  const pct = known
+    ? Math.min(100, Math.round((progress.processed / progress.total) * 100))
+    : undefined;
+
+  return (
+    <div className="bg-secondary p-3 rounded-md">
+      <div className="flex justify-between gap-2 text-sm mb-1">
+        <span className="truncate">{progress.filename}</span>
+        <span className="shrink-0">
+          {progress.error
+            ? "failed"
+            : progress.done
+              ? "done"
+              : known
+                ? `${pct}% (${progress.processed}/${progress.total})`
+                : `processing… (${progress.processed})`}
+        </span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-(--color-bg) overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${
+            progress.error ? "bg-(--color-error)" : "bg-(--color-primary)"
+          }`}
+          style={{
+            width:
+              progress.error || progress.done
+                ? "100%"
+                : known
+                  ? `${pct}%`
+                  : "35%",
+          }}
+        />
+      </div>
+      {progress.error && (
+        <p className="error mt-1 text-sm">{progress.error}</p>
       )}
     </div>
   );

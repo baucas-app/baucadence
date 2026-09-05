@@ -13,6 +13,7 @@ import (
 
 	"github.com/gabehf/koito/engine/middleware"
 	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/models"
 	"github.com/gabehf/koito/internal/utils"
@@ -104,6 +105,7 @@ func UploadImportHandler(recognize RecognizeImportFilename, runImport RunImportF
 		}
 
 		l.Info().Strs("files", saved).Msg("UploadImportHandler: Starting background import of uploaded file(s)")
+		importprogress.StartBatch(saved)
 		go func() {
 			bgCtx := logger.NewContext(l)
 			for _, name := range saved {
@@ -116,6 +118,25 @@ func UploadImportHandler(recognize RecognizeImportFilename, runImport RunImportF
 		utils.WriteJSON(w, http.StatusAccepted, map[string]any{
 			"started_files": saved,
 		})
+	}
+}
+
+// ImportStatusHandler returns the progress of the most recent import
+// batch (started either by an upload or the startup directory scan), so
+// the web UI can poll it and show a progress bar.
+func ImportStatusHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil {
+			utils.WriteError(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		if user.Role != models.UserRoleAdmin {
+			utils.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		utils.WriteJSON(w, http.StatusOK, importprogress.Snapshot())
 	}
 }
 

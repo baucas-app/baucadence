@@ -21,6 +21,7 @@ import (
 	"github.com/gabehf/koito/internal/db/sqlite"
 	"github.com/gabehf/koito/internal/images"
 	"github.com/gabehf/koito/internal/importer"
+	"github.com/gabehf/koito/internal/importprogress"
 	"github.com/gabehf/koito/internal/logger"
 	mbz "github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/models"
@@ -290,12 +291,16 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 			l.Error().Interface("recover", r).Msg("Importer: Panic when importing files")
 		}
 	}()
+	names := make([]string, 0, len(files))
 	for _, file := range files {
-		if file.IsDir() {
-			continue
+		if !file.IsDir() {
+			names = append(names, file.Name())
 		}
-		if err := importer.DetectAndImportFile(logger.NewContext(l), store, mbzc, file.Name()); err != nil {
-			l.Warn().Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
+	}
+	importprogress.StartBatch(names)
+	for _, name := range names {
+		if err := importer.DetectAndImportFile(logger.NewContext(l), store, mbzc, name); err != nil {
+			l.Warn().Err(err).Msgf("Importer: Failed to import file: %s", name)
 		}
 	}
 }

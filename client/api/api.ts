@@ -201,6 +201,12 @@ function updateApiKeyLabel(id: number, label: string): Promise<Response> {
   });
 }
 
+function getImportStatus(): Promise<ImportFileProgress[]> {
+  return fetch(`/apis/web/v1/import/status`).then(
+    (r) => r.json() as Promise<ImportFileProgress[]>,
+  );
+}
+
 const uploadImportFile = async (file: File): Promise<UploadImportResponse> => {
   const form = new FormData();
   form.append("file", file);
@@ -415,6 +421,7 @@ export {
   createUser,
   deleteUser,
   uploadImportFile,
+  getImportStatus,
   deleteListen,
   getAlbum,
   getExport,
@@ -549,6 +556,13 @@ type ApiError = {
 type UploadImportResponse = {
   started_files: string[];
 };
+type ImportFileProgress = {
+  filename: string;
+  total: number; // -1 if the format doesn't allow knowing this upfront
+  processed: number;
+  done: boolean;
+  error?: string;
+};
 type Config = {
   default_theme: string;
   login_gate: boolean;
@@ -598,4 +612,5 @@ export type {
   RewindStats,
   ImageList,
   UploadImportResponse,
+  ImportFileProgress,
 };
