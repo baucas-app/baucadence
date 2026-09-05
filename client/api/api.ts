@@ -201,6 +201,42 @@ function updateApiKeyLabel(id: number, label: string): Promise<Response> {
   });
 }
 
+function getUsers(): Promise<User[]> {
+  return fetch(`/apis/web/v1/users`).then((r) => r.json() as Promise<User[]>);
+}
+const createUser = async (
+  username: string,
+  password: string,
+  role: "user" | "admin",
+): Promise<User> => {
+  const r = await fetch(`/apis/web/v1/users`, {
+    method: "POST",
+    body: JSON.stringify({ username, password, role }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!r.ok) {
+    let errorMessage = `error: ${r.status}`;
+    try {
+      const errorData: ApiError = await r.json();
+      if (errorData && typeof errorData.error === "string") {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      console.error("unexpected api error:", e);
+    }
+    throw new Error(errorMessage);
+  }
+  const data: User = await r.json();
+  return data;
+};
+function deleteUser(id: number): Promise<Response> {
+  return fetch(`/apis/web/v1/users/${id}`, {
+    method: "DELETE",
+  });
+}
+
 function deleteItem(itemType: string, id: number): Promise<Response> {
   return fetch(`/apis/web/v1/${itemType}/${id}`, {
     method: "DELETE",
@@ -353,6 +389,9 @@ export {
   createApiKey,
   deleteApiKey,
   updateApiKeyLabel,
+  getUsers,
+  createUser,
+  deleteUser,
   deleteListen,
   getAlbum,
   getExport,

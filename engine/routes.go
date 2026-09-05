@@ -131,6 +131,10 @@ func bindRoutes(
 			r.Get("/user", handlers.MeHandler())
 			r.Patch("/user", handlers.UpdateUserHandler(db))
 
+			r.Get("/users", handlers.ListUsersHandler(db))
+			r.Post("/users", handlers.CreateUserHandler(db))
+			r.Delete("/users/{id}", handlers.DeleteUserHandler(db))
+
 			r.Get("/export", handlers.ExportHandler(db))
 			r.Delete("/data", handlers.PurgeAllDataHandler(db))
 		})

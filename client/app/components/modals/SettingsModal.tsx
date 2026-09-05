@@ -8,6 +8,7 @@ import ApiKeysModal from "./ApiKeysModal";
 import { AsyncButton } from "../AsyncButton";
 import ExportModal from "./ExportModal";
 import SourcesModal from "./SourcesModal";
+import UsersModal from "./UsersModal";
 import About from "./About";
 
 interface Props {
@@ -50,6 +51,11 @@ export default function SettingsModal({ open, setOpen }: Props) {
               <TabsTrigger className={triggerClasses} value="Sources">
                 Sources
               </TabsTrigger>
+              {user.role === "admin" && (
+                <TabsTrigger className={triggerClasses} value="Users">
+                  Users
+                </TabsTrigger>
+              )}
             </>
           )}
           <TabsTrigger
@@ -78,6 +84,11 @@ export default function SettingsModal({ open, setOpen }: Props) {
         <TabsContent value="Sources" className={contentClasses}>
           <SourcesModal />
         </TabsContent>
+        {user?.role === "admin" && (
+          <TabsContent value="Users" className={contentClasses}>
+            <UsersModal />
+          </TabsContent>
+        )}
         <TabsContent value="About" className={contentClasses}>
           <About />
         </TabsContent>

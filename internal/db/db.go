@@ -89,6 +89,7 @@ type UserStore interface {
 	GetUserByApiKey(ctx context.Context, key string) (*models.User, error)
 	GetAdminUser(ctx context.Context) (*models.User, error)
 	GetApiKeysByUserID(ctx context.Context, id int32) ([]models.ApiKey, error)
+	ListUsers(ctx context.Context) ([]models.User, error)
 	SaveUser(ctx context.Context, opts SaveUserOpts) (*models.User, error)
 	SaveApiKey(ctx context.Context, opts SaveApiKeyOpts) (*models.ApiKey, error)
 	SaveSession(ctx context.Context, userId int32, expiresAt time.Time, persistent bool) (*models.Session, error)
@@ -97,6 +98,7 @@ type UserStore interface {
 	RefreshSession(ctx context.Context, sessionId uuid.UUID, expiresAt time.Time) error
 	DeleteSession(ctx context.Context, sessionId uuid.UUID) error
 	DeleteApiKey(ctx context.Context, id int32) error
+	DeleteUser(ctx context.Context, id int32) error
 	CountUsers(ctx context.Context) (int64, error)
 }
 

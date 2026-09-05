@@ -113,6 +113,9 @@ func (s *Sqlite) SaveUser(ctx context.Context, opts db.SaveUserOpts) (*models.Us
 		strings.ToLower(opts.Username), string(opts.Role), hash,
 	)
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return nil, fmt.Errorf("SaveUser: %w", db.ErrUsernameTaken)
+		}
 		return nil, fmt.Errorf("SaveUser: insert: %w", err)
 	}
 	id64, _ := res.LastInsertId()
@@ -215,4 +218,39 @@ func (s *Sqlite) CountUsers(ctx context.Context) (int64, error) {
 	var count int64
 	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM users`).Scan(&count)
 	return count, err
+}
+
+func (s *Sqlite) ListUsers(ctx context.Context) ([]models.User, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT id, username, role FROM users ORDER BY id`)
+	if err != nil {
+		return nil, fmt.Errorf("ListUsers: %w", err)
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var u models.User
+		var role string
+		if err := rows.Scan(&u.ID, &u.Username, &role); err != nil {
+			return nil, fmt.Errorf("ListUsers: %w", err)
+		}
+		u.Role = models.UserRole(role)
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+func (s *Sqlite) DeleteUser(ctx context.Context, id int32) error {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM users WHERE id = ?`, id)
+	if err != nil {
+		return fmt.Errorf("DeleteUser: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("DeleteUser: %w", err)
+	}
+	if n == 0 {
+		return db.ErrNotFound
+	}
+	return nil
 }
