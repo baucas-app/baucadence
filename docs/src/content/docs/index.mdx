@@ -1,0 +1,39 @@
+---
+title: The modern, open source scrobbler
+description: Visualize your listening history with a modern, open source, ListenBrainz-compatible scrobbler.
+template: splash
+hero:
+  tagline: Explore your listening patterns, track your favorite artists, and relay scrobbles to other sites — all from a fast, themeable server that you control.
+  image:
+    file: ../../assets/out.webp
+  actions:
+    - text: Get Started
+      link: /guides/installation/
+      icon: right-arrow
+    - text: View a live instance
+      link: https://koito.mnrva.dev
+      icon: external
+      variant: minimal
+head:
+    - tag: title
+      content: Docs | Koito
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid>
+	<Card title="ListenBrainz compatible" icon="puzzle">
+		Koito can be connected to any music server or client that allows for custom ListenBrainz URLs.
+	</Card>
+	<Card title="Scrobbler relay" icon="rocket">
+		Automatically relay listens submitted to your Koito instance to other ListenBrainz compatible servers.
+	</Card>
+	<Card title="Automatic data fetching" icon="download">
+		Koito automatically fetches data from MusicBrainz and images from Deezer and Cover Art Archive to compliment what is provided by your music server.
+	</Card>
+	<Card title="Themeable" icon="seti:css">
+		Koito ships with twelve different themes, now with support for custom themes!
+	</Card>
+</CardGrid>

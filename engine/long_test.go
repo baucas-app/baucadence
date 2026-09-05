@@ -1,0 +1,1130 @@
+package engine_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/gabehf/koito/engine/handlers"
+	"github.com/gabehf/koito/internal/cfg"
+	"github.com/gabehf/koito/internal/db"
+	"github.com/gabehf/koito/internal/db/sqlite"
+	"github.com/gabehf/koito/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+var session string
+var apikey string
+var loginOnce sync.Once
+var apikeyOnce sync.Once
+
+func login(t *testing.T) {
+	loginOnce.Do(func() {
+		resp, err := http.DefaultClient.Post(
+			host()+"/apis/web/v1/login",
+			"application/json",
+			strings.NewReader(`{"username":"`+cfg.DefaultUsername()+`","password":"`+cfg.DefaultPassword()+`"}`))
+		respBytes, _ := io.ReadAll(resp.Body)
+		t.Logf("Login request response: %s - %s", resp.Status, respBytes)
+		require.NoError(t, err)
+		require.Len(t, resp.Cookies(), 1)
+		session = resp.Cookies()[0].Value
+		require.NotEmpty(t, session)
+	})
+}
+
+func makeAuthRequest(t *testing.T, session, method, endpoint string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, host()+endpoint, body)
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: session,
+	})
+	req.Header.Set("Content-Type", "application/json")
+	t.Logf("Making request to %s with session: %s", endpoint, session)
+	return http.DefaultClient.Do(req)
+}
+
+// Expects a valid session
+func getApiKey(t *testing.T, session string) {
+	apikeyOnce.Do(func() {
+		resp, err := makeAuthRequest(t, session, "GET", "/apis/web/v1/user/apikeys", nil)
+		require.NoError(t, err)
+		var keys []models.ApiKey
+		err = json.NewDecoder(resp.Body).Decode(&keys)
+		require.NoError(t, err)
+		require.GreaterOrEqual(t, len(keys), 1)
+		apikey = keys[0].Key
+	})
+}
+
+// truncateTestData removes all music data from the server's database, leaving
+// users, sessions, and api_keys intact. Deleting artists cascades to
+// artist_aliases, artist_tracks, and artist_releases; the orphan trigger then
+// deletes releases, which cascade to release_aliases, tracks, and track_aliases.
+func truncateTestData(t *testing.T) {
+	t.Helper()
+	require.NoError(t, store.Exec("DELETE FROM listens"))
+	require.NoError(t, store.Exec("DELETE FROM artists"))
+	// Belt-and-suspenders: delete any releases the trigger may have missed
+	// (e.g. releases that were never associated with an artist).
+	require.NoError(t, store.Exec("DELETE FROM releases"))
+}
+
+func newTestDB() *sqlite.Sqlite {
+	s, err := sqlite.NewInMemory()
+	if err != nil {
+		panic(err)
+	}
+
+	// insert a user into the db with id 1 to use for tests
+	err = s.Exec(`INSERT INTO users (username, password) VALUES ('test', 0x123)`)
+	if err != nil {
+		panic(err)
+	}
+
+	return s
+}
+
+func doSubmitListens(t *testing.T) {
+	login(t)
+	getApiKey(t, session)
+	bodies := []string{fmt.Sprintf(`{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": %d,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"efc787f0-046f-4a60-beff-77b398c8cdf4"
+						],
+						"artist_names": [
+							"さユり"
+						],
+						"duration_ms": 275960,
+						"recording_mbid": "21524d55-b1f8-45d1-b172-976cba447199",
+						"release_group_mbid": "3281e0d9-fa44-4337-a8ce-6f264beeae16",
+						"release_mbid": "eb790e90-0065-4852-b47d-bbeede4aa9fc",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "さユり",
+					"release_name": "酸欠少女",
+					"track_name": "花の塔"
+				}
+			}
+		]
+	}`, time.Now().Add(-2*time.Hour).Unix()), // yesterday
+		fmt.Sprintf(`{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": %d,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"80b3cb83-b7a3-4f79-ad42-8325cefb3626"
+						],
+						"artist_names": [
+							"キタニタツヤ"
+						],
+						"duration_ms": 197270,
+						"recording_mbid": "4e909c21-e7a8-404d-b75a-0c8c2926efb0",
+						"release_group_mbid": "89069d92-e495-462c-b189-3431551868ed",
+						"release_mbid": "e16a49d6-77f3-4d73-b93c-cac855ce6ad5",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "キタニタツヤ",
+					"release_name": "Where Our Blue Is",
+					"track_name": "Where Our Blue Is"
+				}
+			}
+		]
+	}`, time.Now().Unix()),
+		fmt.Sprintf(`{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": %d,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"1262ab85-308b-46e7-b0b5-91fef8e46b62"
+						],
+						"artist_names": [
+							"ネクライトーキー"
+						],
+						"duration_ms": 241560,
+						"recording_mbid": "8eec4f3f-a059-4217-aad1-fbf82e33e756",
+						"release_group_mbid": "14f1aff0-dd19-4b42-82dd-720386b6d4c1",
+						"release_mbid": "7762d7af-7b6c-454f-977e-1b261743e265",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "ネクライトーキー",
+					"release_name": "ONE!",
+					"track_name": "こんがらがった！"
+				}
+			}
+		]
+	}`, time.Now().Add(-1*time.Hour).Unix())}
+	for _, body := range bodies {
+		req, err := http.NewRequest("POST", host()+"/apis/listenbrainz/1/submit-listens", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		respBytes, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+	}
+}
+
+func doSubmitListensForMergeConflict(t *testing.T) {
+	login(t)
+	getApiKey(t, session)
+	tt := time.Now().Add(-2 * time.Hour).Unix() // yesterday
+	bodies := []string{fmt.Sprintf(`{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": %d,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"efc787f0-046f-4a60-beff-77b398c8cdf4"
+						],
+						"artist_names": [
+							"さユり"
+						],
+						"duration_ms": 275960,
+						"recording_mbid": "21524d55-b1f8-45d1-b172-976cba447199",
+						"release_group_mbid": "3281e0d9-fa44-4337-a8ce-6f264beeae16",
+						"release_mbid": "eb790e90-0065-4852-b47d-bbeede4aa9fc",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "さユり",
+					"release_name": "酸欠少女",
+					"track_name": "花の塔"
+				}
+			}
+		]
+	}`, tt),
+		fmt.Sprintf(`{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": %d,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"efc787f0-046f-4a60-beff-77b398c8cdf4"
+						],
+						"artist_names": [
+							"Sayuri"
+						],
+						"duration_ms": 241560,
+						"recording_mbid": "21524d55-b1f8-45d1-b172-976cba447199",
+						"release_group_mbid": "3281e0d9-fa44-4337-a8ce-6f264beeae16",
+						"release_mbid": "eb790e90-0065-4852-b47d-bbeede4aa9fc",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "Sayuri",
+					"release_name": "Sanketsu Girl",
+					"track_name": "Tower of Flower"
+				}
+			}
+		]
+	}`, tt)}
+	for _, body := range bodies {
+		req, err := http.NewRequest("POST", host()+"/apis/listenbrainz/1/submit-listens", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		respBytes, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+	}
+}
+
+func TestGetters(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+	// Artist was saved
+	resp, err := http.DefaultClient.Get(host() + "/apis/web/v1/artist/1")
+	assert.NoError(t, err)
+	var artist models.Artist
+	err = json.NewDecoder(resp.Body).Decode(&artist)
+	require.NoError(t, err)
+	assert.Equal(t, "さユり", artist.Name)
+
+	// Album was saved
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/album/1")
+	assert.NoError(t, err)
+	var album models.Album
+	err = json.NewDecoder(resp.Body).Decode(&album)
+	require.NoError(t, err)
+	assert.Equal(t, "酸欠少女", album.Title)
+
+	// Track was saved
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/1")
+	assert.NoError(t, err)
+	var track models.Track
+	err = json.NewDecoder(resp.Body).Decode(&track)
+	require.NoError(t, err)
+	assert.Equal(t, "花の塔", track.Title)
+
+	// Listen was saved
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/listens?period=all_time")
+	assert.NoError(t, err)
+	var listens db.PaginatedResponse[models.Listen]
+	err = json.NewDecoder(resp.Body).Decode(&listens)
+	require.NoError(t, err)
+	require.Len(t, listens.Items, 3)
+	assert.EqualValues(t, 2, listens.Items[0].Track.ID)
+	assert.Equal(t, "Where Our Blue Is", listens.Items[0].Track.Title)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/top/artists?period=all_time")
+	assert.NoError(t, err)
+	var artists db.PaginatedResponse[models.Artist]
+	err = json.NewDecoder(resp.Body).Decode(&artists)
+	require.NoError(t, err)
+	require.Len(t, artists.Items, 3)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/top/albums?period=all_time")
+	assert.NoError(t, err)
+	var albums db.PaginatedResponse[models.Album]
+	err = json.NewDecoder(resp.Body).Decode(&albums)
+	require.NoError(t, err)
+	require.Len(t, albums.Items, 3)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/top/tracks?period=all_time")
+	assert.NoError(t, err)
+	var tracks db.PaginatedResponse[models.Track]
+	err = json.NewDecoder(resp.Body).Decode(&tracks)
+	require.NoError(t, err)
+	require.Len(t, tracks.Items, 3)
+
+	truncateTestData(t)
+}
+
+func TestMerge(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/track/2/merge", strings.NewReader(`{"merge_from_id":1}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/2")
+	require.NoError(t, err)
+	var track models.Track
+	err = json.NewDecoder(resp.Body).Decode(&track)
+	require.NoError(t, err)
+	assert.EqualValues(t, 2, track.ListenCount)
+
+	truncateTestData(t)
+
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/artist/2/merge", strings.NewReader(`{"merge_from_id":1}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/2")
+	require.NoError(t, err)
+	var artist models.Artist
+	err = json.NewDecoder(resp.Body).Decode(&artist)
+	require.NoError(t, err)
+	assert.EqualValues(t, 2, artist.ListenCount)
+
+	truncateTestData(t)
+
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/album/2/merge", strings.NewReader(`{"merge_from_id":1}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/album/2")
+	require.NoError(t, err)
+	var album models.Album
+	err = json.NewDecoder(resp.Body).Decode(&album)
+	require.NoError(t, err)
+	assert.EqualValues(t, 2, album.ListenCount)
+
+	truncateTestData(t)
+}
+
+func TestMerge_ConflictingListens(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens For Merge Conflict", doSubmitListensForMergeConflict)
+
+	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/artist/1/merge", strings.NewReader(`{"merge_from_id":2}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/1")
+	require.NoError(t, err)
+	var artist models.Artist
+	err = json.NewDecoder(resp.Body).Decode(&artist)
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, artist.ListenCount) // conflicting listens should be ignored on merge, so only one remains
+
+	// old artist deleted
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/2")
+	require.NoError(t, err)
+	assert.Equal(t, 404, resp.StatusCode)
+}
+
+func TestValidateToken(t *testing.T) {
+	login(t)
+	getApiKey(t, session)
+
+	req, err := http.NewRequest("GET", host()+"/apis/listenbrainz/1/validate-token", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	var actual handlers.LbzValidateResponse
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	t.Log(actual)
+	var expected handlers.LbzValidateResponse
+	expected.Code = 200
+	expected.Message = "Token valid."
+	expected.Valid = true
+	expected.UserName = "test"
+	assert.True(t, assert.ObjectsAreEqual(expected, actual))
+
+	req, err = http.NewRequest("GET", host()+"/apis/listenbrainz/1/validate-token", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Token thisisasuperinvalidtoken")
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, 401, resp.StatusCode)
+
+	req, err = http.NewRequest("GET", host()+"/apis/listenbrainz/1/validate-token", nil)
+	require.NoError(t, err)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, 401, resp.StatusCode)
+}
+
+func TestDelete(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err := makeAuthRequest(t, session, "DELETE", "/apis/web/v1/artist/1", nil)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/1")
+	require.NoError(t, err)
+	require.Equal(t, 404, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "DELETE", "/apis/web/v1/album/1", nil)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/album/1")
+	require.NoError(t, err)
+	require.Equal(t, 404, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "DELETE", "/apis/web/v1/track/1", nil)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/1")
+	require.NoError(t, err)
+	require.Equal(t, 404, resp.StatusCode)
+
+	truncateTestData(t)
+}
+
+func TestLoginGate(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	req, err := http.NewRequest("DELETE", host()+"/apis/web/v1/artist/1", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Token "+apikey)
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 204, resp.StatusCode)
+
+	req, err = http.NewRequest("GET", host()+"/apis/web/v1/artist/3", nil)
+	require.NoError(t, err)
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
+	var artist models.Artist
+	err = json.NewDecoder(resp.Body).Decode(&artist)
+	require.NoError(t, err)
+	assert.Equal(t, "ネクライトーキー", artist.Name)
+
+	cfg.SetLoginGate(true)
+
+	req, err = http.NewRequest("GET", host()+"/apis/web/v1/artist/3", nil)
+	require.NoError(t, err)
+	// req.Header.Add("Authorization", "Token "+apikey)
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 401, resp.StatusCode)
+
+	req, err = http.NewRequest("GET", host()+"/apis/web/v1/artist/3", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", "Token "+apikey)
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
+	err = json.NewDecoder(resp.Body).Decode(&artist)
+	require.NoError(t, err)
+	assert.Equal(t, "ネクライトーキー", artist.Name)
+
+	cfg.SetLoginGate(false)
+
+	truncateTestData(t)
+}
+
+func TestAliasesAndSearch(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/artist/1/aliases", strings.NewReader(`{"alias":"Sayuri"}`))
+	require.NoError(t, err)
+	require.Equal(t, 201, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/1/aliases")
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	var actual []models.Alias
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	require.Len(t, actual, 2)
+	assert.ElementsMatch(t, []models.Alias{
+		{ID: 1, Alias: "さユり", Source: "Canonical", Primary: true},
+		{ID: 1, Alias: "Sayuri", Source: "Manual", Primary: false},
+	}, actual)
+
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/album/1/aliases", strings.NewReader(`{"alias":"Sanketsu Girl"}`))
+	require.NoError(t, err)
+	require.Equal(t, 201, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/album/1/aliases")
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	actual = nil
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	require.Len(t, actual, 2)
+	assert.ElementsMatch(t, []models.Alias{
+		{ID: 1, Alias: "酸欠少女", Source: "Canonical", Primary: true},
+		{ID: 1, Alias: "Sanketsu Girl", Source: "Manual", Primary: false},
+	}, actual)
+
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/track/1/aliases", strings.NewReader(`{"alias":"Tower of Flower"}`))
+	require.NoError(t, err)
+	require.Equal(t, 201, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/track/1/aliases/primary", strings.NewReader(`{"alias":"Tower of Flower"}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/1")
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	var track models.Track
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&track))
+	require.Len(t, actual, 2)
+	assert.Equal(t, track.Title, "Tower of Flower")
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/artist/1/aliases/primary", strings.NewReader(`{"alias":"Sayuri"}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// make sure searching works with aliases
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/search?q=Sanketsu")
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	var results handlers.SearchResults
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&results))
+	require.Len(t, results.Albums, 1)
+	assert.Equal(t, results.Albums[0].Title, "酸欠少女")
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/search?q=Sayuri")
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	results = handlers.SearchResults{}
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&results))
+	require.Len(t, results.Artists, 1)
+	assert.Equal(t, results.Artists[0].Name, "Sayuri") // reflects the new primary alias
+
+	truncateTestData(t)
+}
+
+func TestStats(t *testing.T) {
+	truncateTestData(t)
+	// zeroes
+	resp, err := http.DefaultClient.Get(host() + "/apis/web/v1/stats")
+	t.Log(resp)
+	require.NoError(t, err)
+
+	t.Run("Submit Listens", doSubmitListens)
+
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/stats?period=all_time")
+	t.Log(resp)
+	require.NoError(t, err)
+	var actual handlers.StatsResponse
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	assert.EqualValues(t, 3, actual.ListenCount)
+	assert.EqualValues(t, 3, actual.TrackCount)
+	assert.EqualValues(t, 3, actual.AlbumCount)
+	assert.EqualValues(t, 3, actual.ArtistCount)
+	assert.EqualValues(t, 11, actual.MinutesListened)
+	assert.EqualValues(t, 1, actual.AlbumsPerArtist)
+	assert.EqualValues(t, 1, actual.TracksPerArtist)
+
+	// TODO: Make a better test for this
+	assert.Contains(t, []float32{1.5, 3}, actual.AvgDailyPlays)
+
+	// there is most certainly a better way to do this
+	// so that the time of day does not effect counts
+	assert.Contains(t, []int{1, 2}, actual.LongestStreak)
+	assert.Contains(t, []int{1, 2}, actual.DaysActive)
+}
+
+func TestListenActivity(t *testing.T) {
+
+	// this test fails when run a bit after midnight
+	// i'll figure out a better test later
+
+	// t.Run("Submit Listens", doSubmitListens)
+
+	// resp, err := http.DefaultClient.Get(host() + "/apis/web/v1/listen-activity?range=3")
+	// t.Log(resp)
+	// require.NoError(t, err)
+	// var actual []db.ListenActivityItem
+	// require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	// t.Log(actual)
+	// require.Len(t, actual, 3)
+	// assert.EqualValues(t, 3, actual[2].Listens)
+}
+
+func TestAuth(t *testing.T) {
+	// logs in a new session
+	resp, err := http.DefaultClient.Post(
+		host()+"/apis/web/v1/login",
+		"application/json",
+		strings.NewReader(`{"username":"`+cfg.DefaultUsername()+`","password":"`+cfg.DefaultPassword()+`"}`))
+	respBytes, _ := io.ReadAll(resp.Body)
+	t.Logf("Login request response: %s - %s", resp.Status, respBytes)
+	require.NoError(t, err)
+	require.Len(t, resp.Cookies(), 1)
+	s := resp.Cookies()[0].Value
+	require.NotEmpty(t, s)
+
+	// test update user
+	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/user", strings.NewReader(`{"username":"new","password":"supersecret"}`))
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// test /user with updated info
+	req, err = http.NewRequest("GET", host()+"/apis/web/v1/user", nil)
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	var me models.User
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&me))
+	require.Equal(t, "new", me.Username)
+
+	// login with old password fails
+	resp, err = http.DefaultClient.Post(
+		host()+"/apis/web/v1/login",
+		"application/json",
+		strings.NewReader(`{"username":"`+cfg.DefaultUsername()+`","password":"`+cfg.DefaultPassword()+`"}`))
+	require.NoError(t, err)
+	require.Equal(t, 401, resp.StatusCode)
+
+	// reset update so other tests dont fail
+	req, err = http.NewRequest("PATCH", host()+"/apis/web/v1/user", strings.NewReader(`{"username":"`+cfg.DefaultUsername()+`","password":"`+cfg.DefaultPassword()+`"}`))
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// creates api key
+	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys", strings.NewReader(`{"label":"testing"}`))
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 201, resp.StatusCode)
+	var response struct {
+		Key string `json:"key"}`
+	}
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&response))
+	require.NotEmpty(t, response.Key)
+
+	// validates api key
+	req, err = http.NewRequest("GET", host()+"/apis/listenbrainz/1/validate-token", nil)
+	require.NoError(t, err)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", response.Key))
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	var actual handlers.LbzValidateResponse
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&actual))
+	var expected handlers.LbzValidateResponse
+	expected.Code = 200
+	expected.Message = "Token valid."
+	expected.Valid = true
+	expected.UserName = "test"
+	assert.True(t, assert.ObjectsAreEqual(expected, actual))
+
+	// changes api key label
+	login(t) // i dont care about using the new session anymore
+	resp, err = makeAuthRequest(t, s, "PATCH", "/apis/web/v1/user/apikeys/2", strings.NewReader(`{"label":"well tested"}`))
+	require.NoError(t, err)
+	assert.Equal(t, 204, resp.StatusCode)
+	resp, err = makeAuthRequest(t, s, "GET", "/apis/web/v1/user/apikeys", nil)
+	require.NoError(t, err)
+	var keys []models.ApiKey
+	err = json.NewDecoder(resp.Body).Decode(&keys)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(keys), 2)
+	require.NotNil(t, keys[1].Label)
+	assert.Equal(t, "well tested", keys[1].Label)
+
+	// logs out
+	req, err = http.NewRequest("POST", host()+"/apis/web/v1/logout", nil)
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// attempts to create an api key - unauthorized
+	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys", strings.NewReader(`{"label":"testing"}`))
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: s,
+	})
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 401, resp.StatusCode)
+}
+
+func TestDeleteListen(t *testing.T) {
+	login(t)
+	getApiKey(t, session)
+
+	truncateTestData(t)
+
+	body := `{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": 1749475719,
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"80b3cb83-b7a3-4f79-ad42-8325cefb3626"
+						],
+						"artist_names": [
+							"キタニタツヤ"
+						],
+						"duration_ms": 197270,
+						"recording_mbid": "4e909c21-e7a8-404d-b75a-0c8c2926efb0",
+						"release_group_mbid": "89069d92-e495-462c-b189-3431551868ed",
+						"release_mbid": "e16a49d6-77f3-4d73-b93c-cac855ce6ad5",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "キタニタツヤ",
+					"release_name": "Where Our Blue Is",
+					"track_name": "Where Our Blue Is"
+				}
+			}
+		]
+	}`
+
+	req, err := http.NewRequest("POST", host()+"/apis/listenbrainz/1/submit-listens", strings.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	respBytes, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+
+	resp, err = makeAuthRequest(t, session, "DELETE", "/apis/web/v1/listens?track_id=1&unix=1749475719", nil)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// deletes are idempotent
+	resp, err = makeAuthRequest(t, session, "DELETE", "/apis/web/v1/listens?track_id=1&unix=1749475719", nil)
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	// listen is deleted
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/1")
+	require.NoError(t, err)
+	var track models.Track
+	err = json.NewDecoder(resp.Body).Decode(&track)
+	require.NoError(t, err)
+	assert.EqualValues(t, 0, track.ListenCount)
+}
+
+func TestArtistReplaceImage(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	buf := &bytes.Buffer{}
+	mpw := multipart.NewWriter(buf)
+	mpw.WriteField("artist_id", "1")
+	w, err := mpw.CreateFormFile("image", path.Join("..", "test_assets", "yuu.jpg"))
+	require.NoError(t, err)
+	f, err := os.Open(path.Join("..", "test_assets", "yuu.jpg"))
+	require.NoError(t, err)
+	defer f.Close()
+	_, err = io.Copy(w, f)
+	require.NoError(t, err)
+	require.NoError(t, mpw.Close())
+
+	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/artist/1/image", buf)
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: session,
+	})
+	req.Header.Add("Content-Type", mpw.FormDataContentType())
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	response := new(handlers.ReplaceImageResponse)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(response))
+	require.NotEmpty(t, response.Image)
+	require.NoError(t, err)
+
+	a, err := store.GetArtist(context.Background(), db.GetArtistOpts{ID: 1})
+	require.NoError(t, err)
+	assert.NotNil(t, a.Image)
+	assert.Contains(t, a.Image.Small, response.Image)
+}
+
+func TestAlbumReplaceImage(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	buf := &bytes.Buffer{}
+	mpw := multipart.NewWriter(buf)
+	mpw.WriteField("album_id", "1")
+	w, err := mpw.CreateFormFile("image", path.Join("..", "test_assets", "yuu.jpg"))
+	require.NoError(t, err)
+	f, err := os.Open(path.Join("..", "test_assets", "yuu.jpg"))
+	require.NoError(t, err)
+	defer f.Close()
+	_, err = io.Copy(w, f)
+	require.NoError(t, err)
+	require.NoError(t, mpw.Close())
+
+	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/album/1/image", buf)
+	require.NoError(t, err)
+	req.AddCookie(&http.Cookie{
+		Name:  "koito_session",
+		Value: session,
+	})
+	req.Header.Add("Content-Type", mpw.FormDataContentType())
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	response := new(handlers.ReplaceImageResponse)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(response))
+	require.NotEmpty(t, response.Image)
+	require.NoError(t, err)
+
+	a, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{ID: 1})
+	require.NoError(t, err)
+	assert.NotNil(t, a.Image)
+	assert.Contains(t, a.Image.Small, response.Image)
+}
+
+func TestSetPrimaryArtist(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	// set and unset track primary artist
+
+	resp, err := makeAuthRequest(t, session, "PATCH", "/apis/web/v1/track/1/artists/1", strings.NewReader(`{"is_primary":false}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	exists, err := store.RowExists(`
+    SELECT EXISTS (
+      SELECT 1 FROM artist_tracks
+      WHERE track_id = $1 AND artist_id = $2 AND is_primary = $3
+    )`, 1, 1, false)
+	require.NoError(t, err)
+	assert.True(t, exists, "expected artist is_primary to be false")
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/track/1/artists/1", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	exists, err = store.RowExists(`
+    SELECT EXISTS (
+      SELECT 1 FROM artist_tracks
+      WHERE track_id = $1 AND artist_id = $2 AND is_primary = $3
+    )`, 1, 1, true)
+	require.NoError(t, err)
+	assert.True(t, exists, "expected artist is_primary to be true")
+
+	// set and unset album primary artist
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/album/1/artists/1", strings.NewReader(`{"is_primary":false}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	exists, err = store.RowExists(`
+    SELECT EXISTS (
+      SELECT 1 FROM artist_releases
+      WHERE release_id = $1 AND artist_id = $2 AND is_primary = $3
+    )`, 1, 1, false)
+	require.NoError(t, err)
+	assert.True(t, exists, "expected artist is_primary to be false")
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/album/1/artists/1", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	exists, err = store.RowExists(`
+    SELECT EXISTS (
+      SELECT 1 FROM artist_releases
+      WHERE release_id = $1 AND artist_id = $2 AND is_primary = $3
+    )`, 1, 1, true)
+	require.NoError(t, err)
+	assert.True(t, exists, "expected artist is_primary to be true")
+
+	// create a new track with multiple artists to make sure only one is primary at a time
+
+	listenBody := `{
+		"listen_type": "single",
+		"payload": [
+			{
+				"listened_at": 1749475719,
+				"track_metadata": {
+					"additional_info": {
+						"artist_names": [
+							"Rat Tally",
+							"Madeline Kenney"
+						],
+						"duration_ms": 197270,
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "Rat Tally feat. Madeline Kenney",
+					"release_name": "In My Car",
+					"track_name": "In My Car"
+				}
+			}
+		]
+	}`
+
+	req, err := http.NewRequest("POST", host()+"/apis/listenbrainz/1/submit-listens", strings.NewReader(listenBody))
+	require.NoError(t, err)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+	req.Header.Add("Content-Type", "application/json")
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	respBytes, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+
+	// ensure only one artist can be primary at once
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/album/4/artists/4", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/album/4/artists/5", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/track/4/artists/4", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/track/4/artists/5", strings.NewReader(`{"is_primary":true}`))
+	require.NoError(t, err)
+	require.Equal(t, 204, resp.StatusCode)
+
+	count, err := store.Count(`SELECT COUNT(*) FROM artist_releases WHERE release_id = $1 AND is_primary = $2`, 4, true)
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, count, "expected only one primary artist for release")
+	count, err = store.Count(`SELECT COUNT(*) FROM artist_tracks WHERE track_id = $1 AND is_primary = $2`, 4, true)
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, count, "expected only one primary artist for track")
+}
+
+func TestUpdateArtists_Track(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	// happy path: add artist 2 to track 1
+	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/track/1/artists", strings.NewReader(`{"artist_ids":[2]}`))
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	exists, err := store.RowExists(`
+		SELECT EXISTS (
+			SELECT 1 FROM artist_tracks
+			WHERE track_id = $1 AND artist_id = $2
+		)`, 1, 2)
+	require.NoError(t, err)
+	assert.True(t, exists, "expected artist 2 to be associated with track 1")
+
+	// happy path: remove artist 2 from track 1
+	resp, err = makeAuthRequest(t, session, "DELETE", "/apis/web/v1/track/1/artists/2", nil)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	exists, err = store.RowExists(`
+		SELECT EXISTS (
+			SELECT 1 FROM artist_tracks
+			WHERE track_id = $1 AND artist_id = $2
+		)`, 1, 2)
+	require.NoError(t, err)
+	assert.False(t, exists, "expected artist 2 to be removed from track 1")
+
+	// 401 Unauthorized
+	req, err := http.NewRequest("POST", host()+"/apis/web/v1/track/1/artists", strings.NewReader(`{"artist_ids":[2]}`))
+	require.NoError(t, err)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	// 400 Bad Request: invalid id
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/track/notanumber/artists", strings.NewReader(`{"artist_ids":[2]}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+	// 400 Bad Request: invalid add_artist
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/track/1/artists", strings.NewReader(`{"artist_ids":["abc123"]}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+	truncateTestData(t)
+}
+
+func TestManualListen(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	// happy
+	unix := strconv.FormatInt(time.Now().Unix()-60, 10)
+	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/listens", strings.NewReader(`{"track_id":1,"unix":`+unix+`}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	count, _ := store.Count(`SELECT COUNT(*) FROM listens WHERE track_id = $1`, 1)
+	assert.Equal(t, 2, count)
+
+	// 400
+	unix = strconv.FormatInt(time.Now().Unix()+60, 10)
+	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/listens", strings.NewReader(`{"track_id":1,"unix":`+unix+`}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+}
+
+func TestNowPlaying(t *testing.T) {
+	truncateTestData(t)
+	t.Run("Submit Listens", doSubmitListens)
+
+	// no playing
+	resp, err := http.DefaultClient.Get(host() + "/apis/web/v1/now-playing")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	var result handlers.NowPlayingResponse
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
+	require.False(t, result.CurrentlyPlaying)
+
+	body := `{
+		"listen_type": "playing_now",
+		"payload": [
+			{
+				"track_metadata": {
+					"additional_info": {
+						"artist_mbids": [
+							"efc787f0-046f-4a60-beff-77b398c8cdf4"
+						],
+						"artist_names": [
+							"さユり"
+						],
+						"duration_ms": 275960,
+						"recording_mbid": "21524d55-b1f8-45d1-b172-976cba447199",
+						"release_group_mbid": "3281e0d9-fa44-4337-a8ce-6f264beeae16",
+						"release_mbid": "eb790e90-0065-4852-b47d-bbeede4aa9fc",
+						"submission_client": "navidrome",
+						"submission_client_version": "0.56.1 (fa2cf362)"
+					},
+					"artist_name": "さユり",
+					"release_name": "酸欠少女",
+					"track_name": "花の塔"
+				}
+			}
+		]
+	}`
+
+	req, err := http.NewRequest("POST", host()+"/apis/listenbrainz/1/submit-listens", strings.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", apikey))
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	respBytes, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+
+	// yes playing
+	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/now-playing")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
+	require.True(t, result.CurrentlyPlaying)
+	require.Equal(t, "花の塔", result.Track.Title)
+}

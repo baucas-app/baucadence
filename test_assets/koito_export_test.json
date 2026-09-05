@@ -1,0 +1,719 @@
+{
+  "version": "1",
+  "exported_at": "2025-06-18T12:56:53Z",
+  "user": "koito",
+  "listens": [
+    {
+      "listened_at": "2022-01-08T22:32:08Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 354,
+        "aliases": [
+          {
+            "alias": "Every Wave To Ever Rise (feat. Elizabeth Powell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/4aaff116fd21b5c1bdafd55fbf843053/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Elizabeth Powell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-16T00:43:25Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 354,
+        "aliases": [
+          {
+            "alias": "Every Wave To Ever Rise (feat. Elizabeth Powell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/4aaff116fd21b5c1bdafd55fbf843053/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Elizabeth Powell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-16T04:47:43Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 354,
+        "aliases": [
+          {
+            "alias": "Every Wave To Ever Rise (feat. Elizabeth Powell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/4aaff116fd21b5c1bdafd55fbf843053/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Elizabeth Powell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-18T18:36:21Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 354,
+        "aliases": [
+          {
+            "alias": "Every Wave To Ever Rise (feat. Elizabeth Powell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/4aaff116fd21b5c1bdafd55fbf843053/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Elizabeth Powell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-16T05:28:11Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 287,
+        "aliases": [
+          {
+            "alias": "I Can't Feel You (feat. Rachel Goswell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/36120901230ef2799610483fbfe5402e/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Rachel Goswell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-18T18:59:01Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 287,
+        "aliases": [
+          {
+            "alias": "I Can't Feel You (feat. Rachel Goswell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/36120901230ef2799610483fbfe5402e/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Rachel Goswell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2022-01-19T01:31:22Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 287,
+        "aliases": [
+          {
+            "alias": "I Can't Feel You (feat. Rachel Goswell)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://cdn-images.dzcdn.net/images/cover/1f54d600d0ce5c88a6b2fd75659ec796/1000x1000-000000-80-0-0.jpg",
+        "mbid": "d0ec30bd-7cdc-417c-979d-5a0631b8a161",
+        "aliases": [
+          {
+            "alias": "American Football (LP3)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/ac81a9567a9ae0963274563370eff015/1000x1000-000000-80-0-0.jpg",
+          "mbid": "4ebb5ad3-9018-407d-8c24-c03011ab9ac6",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "American Football",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/36120901230ef2799610483fbfe5402e/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "Rachel Goswell",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-17T03:16:50Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 0,
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/ac1f8da0-21d7-426e-83b0-befff06f0871/front",
+        "mbid": "ac1f8da0-21d7-426e-83b0-befff06f0871",
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://yt3.googleusercontent.com/DKlRZNy1yaOkBvIH5vaA3RHdLtylEqaoRsnQIfJlSeo8y_Ov1_3fZRebFtm3NgpsB6tvJQzzcQ=s900-c-k-c0x00ffffff-no-rj",
+          "mbid": "30f851bb-dba3-4e9b-811c-5f27f595c86a",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "鈴木雅之",
+              "source": "Canonical",
+              "is_primary": true
+            },
+            {
+              "alias": "Masayuki Suzuki",
+              "source": "MusicBrainz",
+              "is_primary": false
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/827131318ca82724744bc9c2c4b43a6c/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "すぅ",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-17T22:17:42Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 0,
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/ac1f8da0-21d7-426e-83b0-befff06f0871/front",
+        "mbid": "ac1f8da0-21d7-426e-83b0-befff06f0871",
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://yt3.googleusercontent.com/DKlRZNy1yaOkBvIH5vaA3RHdLtylEqaoRsnQIfJlSeo8y_Ov1_3fZRebFtm3NgpsB6tvJQzzcQ=s900-c-k-c0x00ffffff-no-rj",
+          "mbid": "30f851bb-dba3-4e9b-811c-5f27f595c86a",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "鈴木雅之",
+              "source": "Canonical",
+              "is_primary": true
+            },
+            {
+              "alias": "Masayuki Suzuki",
+              "source": "MusicBrainz",
+              "is_primary": false
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/827131318ca82724744bc9c2c4b43a6c/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "すぅ",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-18T20:46:02Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 0,
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/ac1f8da0-21d7-426e-83b0-befff06f0871/front",
+        "mbid": "ac1f8da0-21d7-426e-83b0-befff06f0871",
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://yt3.googleusercontent.com/DKlRZNy1yaOkBvIH5vaA3RHdLtylEqaoRsnQIfJlSeo8y_Ov1_3fZRebFtm3NgpsB6tvJQzzcQ=s900-c-k-c0x00ffffff-no-rj",
+          "mbid": "30f851bb-dba3-4e9b-811c-5f27f595c86a",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "鈴木雅之",
+              "source": "Canonical",
+              "is_primary": true
+            },
+            {
+              "alias": "Masayuki Suzuki",
+              "source": "MusicBrainz",
+              "is_primary": false
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/827131318ca82724744bc9c2c4b43a6c/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "すぅ",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-19T14:15:35Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 0,
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/ac1f8da0-21d7-426e-83b0-befff06f0871/front",
+        "mbid": "ac1f8da0-21d7-426e-83b0-befff06f0871",
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://yt3.googleusercontent.com/DKlRZNy1yaOkBvIH5vaA3RHdLtylEqaoRsnQIfJlSeo8y_Ov1_3fZRebFtm3NgpsB6tvJQzzcQ=s900-c-k-c0x00ffffff-no-rj",
+          "mbid": "30f851bb-dba3-4e9b-811c-5f27f595c86a",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "鈴木雅之",
+              "source": "Canonical",
+              "is_primary": true
+            },
+            {
+              "alias": "Masayuki Suzuki",
+              "source": "MusicBrainz",
+              "is_primary": false
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/827131318ca82724744bc9c2c4b43a6c/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "すぅ",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-20T00:36:12Z",
+      "client": "test client",
+      "track": {
+        "mbid": null,
+        "duration": 0,
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/ac1f8da0-21d7-426e-83b0-befff06f0871/front",
+        "mbid": "ac1f8da0-21d7-426e-83b0-befff06f0871",
+        "aliases": [
+          {
+            "alias": "GIRI GIRI",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "https://yt3.googleusercontent.com/DKlRZNy1yaOkBvIH5vaA3RHdLtylEqaoRsnQIfJlSeo8y_Ov1_3fZRebFtm3NgpsB6tvJQzzcQ=s900-c-k-c0x00ffffff-no-rj",
+          "mbid": "30f851bb-dba3-4e9b-811c-5f27f595c86a",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "鈴木雅之",
+              "source": "Canonical",
+              "is_primary": true
+            },
+            {
+              "alias": "Masayuki Suzuki",
+              "source": "MusicBrainz",
+              "is_primary": false
+            }
+          ]
+        },
+        {
+          "image_url": "https://cdn-images.dzcdn.net/images/artist/827131318ca82724744bc9c2c4b43a6c/1000x1000-000000-80-0-0.jpg",
+          "mbid": null,
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "すぅ",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "listened_at": "2025-03-23T17:22:03Z",
+      "client": "test client",
+      "track": {
+        "mbid": "a4f26836-3894-46c1-acac-227808308687",
+        "duration": 218,
+        "aliases": [
+          {
+            "alias": "Nijinoiroyo Azayakadeare (NELKE ver.)",
+            "source": "Manual",
+            "is_primary": false
+          },
+          {
+            "alias": "虹の色よ鮮やかであれ (NELKE ver.)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ]
+      },
+      "album": {
+        "image_url": "https://coverartarchive.org/release/7114f07c-c1f7-4423-a9c3-585444bef51b/front",
+        "mbid": "7114f07c-c1f7-4423-a9c3-585444bef51b",
+        "aliases": [
+          {
+            "alias": "Nijinoiroyo Azayakadeare (NELKE ver.)",
+            "source": "MusicBrainz",
+            "is_primary": false
+          },
+          {
+            "alias": "虹の色よ鮮やかであれ (NELKE ver.)",
+            "source": "Canonical",
+            "is_primary": true
+          }
+        ],
+        "various_artists": false
+      },
+      "artists": [
+        {
+          "image_url": "User Upload",
+          "mbid": "3d202d36-1219-4e31-bfb9-d73355c66a83",
+          "is_primary": false,
+          "aliases": [
+            {
+              "alias": "NELKE",
+              "source": "Canonical",
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

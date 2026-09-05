@@ -1,0 +1,36 @@
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  /* Your preferred text font. Starlight uses a system font stack by default. */
+  --font-sans: 'Jost', sans-serif;
+  /* Your preferred code font. Starlight uses system monospace fonts by default. */
+  --font-mono: 'IBM Plex Mono';
+  /* Your preferred accent color. Indigo is closest to Starlight’s defaults. */
+  --color-accent-50: #FABEB4;
+  --color-accent-100: #FA9482;
+  --color-accent-200: #FF826D;
+  --color-accent-300: #FF7961;
+  --color-accent-400: #FF6E55;
+  --color-accent-500: #FF6247;
+  --color-accent-600: #FF573A;
+  --color-accent-700: #E6472B;
+  --color-accent-800: #D0391F;
+  --color-accent-900: #B82F17;
+  --color-accent-950: #8A220F;
+  /* Your preferred gray scale. Zinc is closest to Starlight’s defaults. */
+  --color-gray-50: #FFFDFD;
+  --color-gray-100: #FCF2F0;
+  --color-gray-200: #F1E8E6;
+  --color-gray-300: #E9DFDD;
+  --color-gray-400: #CBB7B3;
+  --color-gray-500: #4F4845;
+  --color-gray-600: #3D3735;
+  --color-gray-700: #2A2524;
+  --color-gray-800: #1E1B19;
+  --color-gray-900: #161312;
+  --color-gray-950: #0C0A09;
+}

@@ -1,0 +1,17 @@
+# Go
+/koito
+/app
+*.exe
+
+# Node / frontend
+client/node_modules/
+client/build/
+docs/node_modules/
+
+# Local runtime data
+config/
+*.db
+*.sqlite
+
+# OS
+.DS_Store

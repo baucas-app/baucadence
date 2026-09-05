@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+
+    - name: Install libvips
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libvips-dev
+
+    - name: Verify libvips install
+      run: vips --version
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      uses: robherley/go-test-action@v0
