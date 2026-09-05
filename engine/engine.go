@@ -325,6 +325,12 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 			if err != nil {
 				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
 			}
+		} else if strings.Contains(file.Name(), "watch-history") {
+			l.Info().Msgf("Importer: Import file %s detecting as being a Google Takeout YouTube export", file.Name())
+			err := importer.ImportYoutubeTakeoutFile(logger.NewContext(l), store, mbzc, file.Name())
+			if err != nil {
+				l.Err(err).Msgf("Importer: Failed to import file: %s", file.Name())
+			}
 		} else {
 			l.Warn().Msgf("Importer: File %s not recognized as a valid import file; make sure it is valid and named correctly", file.Name())
 		}
