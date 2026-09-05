@@ -1,7 +1,7 @@
 services:
-  scrobbler:
+  baucadence:
     build: .
-    container_name: scrobbler
+    container_name: baucadence
     ports:
       - "4110:4110"
     volumes:
