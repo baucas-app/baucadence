@@ -23,12 +23,13 @@ const (
 
 	YTMUSIC_ENABLED_ENV      = "SCROBLLI_YTMUSIC_ENABLED"
 	YTMUSIC_POLL_SECONDS_ENV = "SCROBLLI_YTMUSIC_POLL_SECONDS"
+	YTMUSIC_TRACK_VIDEOS_ENV = "SCROBLLI_YTMUSIC_TRACK_VIDEOS"
 )
 
 const (
-	defaultSpotifyPollSeconds  = 60
-	defaultYtmusicPollSeconds  = 120
-	minAllowedPollSeconds      = 15
+	defaultSpotifyPollSeconds = 60
+	defaultYtmusicPollSeconds = 120
+	minAllowedPollSeconds     = 15
 )
 
 // EncryptionKey returns the secret used to encrypt credentials/tokens
@@ -72,6 +73,12 @@ func YtmusicEnabled() bool {
 
 func YtmusicPollInterval() time.Duration {
 	return pollInterval(YTMUSIC_POLL_SECONDS_ENV, defaultYtmusicPollSeconds)
+}
+
+// YtmusicTrackVideosEnabled reports whether regular (non-music) YouTube
+// watch history should also be tracked, in addition to YouTube Music.
+func YtmusicTrackVideosEnabled() bool {
+	return strings.ToLower(os.Getenv(YTMUSIC_TRACK_VIDEOS_ENV)) == "true"
 }
 
 func pollInterval(env string, def int) time.Duration {

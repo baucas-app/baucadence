@@ -7,6 +7,7 @@ import { useAppContext } from "~/providers/AppProvider";
 import ApiKeysModal from "./ApiKeysModal";
 import { AsyncButton } from "../AsyncButton";
 import ExportModal from "./ExportModal";
+import SourcesModal from "./SourcesModal";
 import About from "./About";
 
 interface Props {
@@ -46,6 +47,9 @@ export default function SettingsModal({ open, setOpen }: Props) {
               <TabsTrigger className={triggerClasses} value="Export">
                 Export
               </TabsTrigger>
+              <TabsTrigger className={triggerClasses} value="Sources">
+                Sources
+              </TabsTrigger>
             </>
           )}
           <TabsTrigger
@@ -70,6 +74,9 @@ export default function SettingsModal({ open, setOpen }: Props) {
         </TabsContent>
         <TabsContent value="Export" className={contentClasses}>
           <ExportModal />
+        </TabsContent>
+        <TabsContent value="Sources" className={contentClasses}>
+          <SourcesModal />
         </TabsContent>
         <TabsContent value="About" className={contentClasses}>
           <About />

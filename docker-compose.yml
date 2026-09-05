@@ -1,0 +1,30 @@
+services:
+  scrobbler:
+    build: .
+    container_name: scrobbler
+    ports:
+      - "4110:4110"
+    volumes:
+      - ./data:/etc/koito
+    environment:
+      # --- Core app ---
+      - KOITO_DEFAULT_USERNAME=admin
+      - KOITO_DEFAULT_PASSWORD=changeme
+      - KOITO_LOGIN_GATE=true
+
+      # --- Credential encryption (required for any source below) ---
+      # Generate one with: openssl rand -base64 32
+      - SCROBLLI_ENCRYPTION_KEY=CHANGE_ME_RANDOM_SECRET
+
+      # --- Spotify (fill in after creating a Spotify Developer app) ---
+      - SCROBLLI_SPOTIFY_CLIENT_ID=
+      - SCROBLLI_SPOTIFY_CLIENT_SECRET=
+      - SCROBLLI_SPOTIFY_REDIRECT_URI=https://your-domain.example/apis/sources/v1/spotify/callback
+
+      # --- Jellyfin (fill in a secret of your choosing) ---
+      - SCROBLLI_JELLYFIN_WEBHOOK_SECRET=
+
+      # --- YouTube / YouTube Music (cookie is entered in the app's Settings > Sources tab, not here) ---
+      - SCROBLLI_YTMUSIC_ENABLED=true
+      - SCROBLLI_YTMUSIC_TRACK_VIDEOS=false
+    restart: unless-stopped

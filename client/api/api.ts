@@ -281,6 +281,49 @@ function deleteListen(listen: Listen): Promise<Response> {
 }
 function getExport() {}
 
+type SourceStatus = { connected: boolean };
+
+async function getSpotifyStatus(): Promise<SourceStatus> {
+  const r = await fetch(`/apis/sources/v1/spotify/status`);
+  return handleJson<SourceStatus>(r);
+}
+function disconnectSpotify(): Promise<Response> {
+  return fetch(`/apis/sources/v1/spotify`, { method: "DELETE" });
+}
+function spotifyAuthorizeUrl(): string {
+  return `/apis/sources/v1/spotify/authorize`;
+}
+
+async function getYoutubeStatus(): Promise<SourceStatus> {
+  const r = await fetch(`/apis/sources/v1/youtube/status`);
+  return handleJson<SourceStatus>(r);
+}
+async function connectYoutube(cookie: string): Promise<Response> {
+  const r = await fetch(`/apis/sources/v1/youtube/connect`, {
+    method: "POST",
+    body: JSON.stringify({ cookie }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!r.ok) {
+    let errorMessage = `error: ${r.status}`;
+    try {
+      const errorData: ApiError = await r.json();
+      if (errorData && typeof errorData.error === "string") {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      console.error("unexpected api error:", e);
+    }
+    throw new Error(errorMessage);
+  }
+  return r;
+}
+function disconnectYoutube(): Promise<Response> {
+  return fetch(`/apis/sources/v1/youtube`, { method: "DELETE" });
+}
+
 async function getRewindStats(args: timeframe): Promise<RewindStats> {
   const r = await fetch(
     `/apis/web/v1/summary?week=${args.week}&month=${args.month}&year=${args.year}&from=${args.from}&to=${args.to}`,
@@ -315,7 +358,14 @@ export {
   getExport,
   submitListen,
   getRewindStats,
+  getSpotifyStatus,
+  disconnectSpotify,
+  spotifyAuthorizeUrl,
+  getYoutubeStatus,
+  connectYoutube,
+  disconnectYoutube,
 };
+export type { SourceStatus };
 type ImageList = {
   xs: string;
   small: string;

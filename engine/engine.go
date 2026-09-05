@@ -25,6 +25,7 @@ import (
 	"github.com/gabehf/koito/internal/logger"
 	mbz "github.com/gabehf/koito/internal/mbz"
 	"github.com/gabehf/koito/internal/models"
+	"github.com/gabehf/koito/internal/sources"
 	"github.com/gabehf/koito/internal/utils"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
@@ -253,6 +254,8 @@ func Run(
 	go catalog.FetchMissingArtistImages(ctx, store)
 	l.Info().Msg("Engine: Attempting to fetch missing album images")
 	go catalog.FetchMissingAlbumImages(ctx, store)
+	l.Info().Msg("Engine: Starting enabled scrobble source connectors")
+	sources.StartPollers(ctx, store, mbzC)
 
 	l.Info().Msg("Engine: Initialization finished")
 	quit := make(chan os.Signal, 1)

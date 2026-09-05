@@ -14,6 +14,7 @@ import (
 	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/db"
 	mbz "github.com/gabehf/koito/internal/mbz"
+	"github.com/gabehf/koito/internal/sources"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -146,6 +147,8 @@ func bindRoutes(
 		r.With(middleware.Authenticate(db, middleware.AuthModeAPIKey)).
 			Get("/validate-token", handlers.LbzValidateTokenHandler())
 	})
+
+	sources.BindRoutes(r, db, mbz)
 
 	// serve react client
 	workDir, _ := os.Getwd()

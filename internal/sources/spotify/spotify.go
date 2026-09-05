@@ -281,15 +281,15 @@ func (s *Source) poll(ctx context.Context) error {
 		}
 
 		opts := catalog.SubmitListenOpts{
-			MbzCaller:   s.mbz,
-			Artist:      primaryArtist,
-			ArtistNames: artistNames,
-			TrackTitle:  item.Track.Name,
+			MbzCaller:    s.mbz,
+			Artist:       primaryArtist,
+			ArtistNames:  artistNames,
+			TrackTitle:   item.Track.Name,
 			ReleaseTitle: item.Track.Album.Name,
-			Duration:    item.Track.DurationMs / 1000,
-			Time:        playedAt,
-			UserID:      state.UserID,
-			Client:      clientName,
+			Duration:     item.Track.DurationMs / 1000,
+			Time:         playedAt,
+			UserID:       state.UserID,
+			Client:       clientName,
 		}
 		if err := catalog.SubmitListen(ctx, s.store, opts); err != nil {
 			l.Err(err).Str("track", item.Track.Name).Msg("spotify.poll: failed to submit listen")
