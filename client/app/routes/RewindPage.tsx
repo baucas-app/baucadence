@@ -101,7 +101,7 @@ export default function RewindPage() {
     );
   }
 
-  const pgTitle = `${stats.title} - Koito`;
+  const pgTitle = `${stats.title} - BauCadence`;
 
   return (
     <div className="w-full min-h-screen">

@@ -9,10 +9,14 @@ import (
 
 type ServerConfig struct {
 	DefaultTheme string `json:"default_theme"`
+	LoginGate    bool   `json:"login_gate"`
 }
 
 func GetCfgHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		utils.WriteJSON(w, http.StatusOK, ServerConfig{DefaultTheme: cfg.DefaultTheme()})
+		utils.WriteJSON(w, http.StatusOK, ServerConfig{
+			DefaultTheme: cfg.DefaultTheme(),
+			LoginGate:    cfg.LoginGate(),
+		})
 	}
 }

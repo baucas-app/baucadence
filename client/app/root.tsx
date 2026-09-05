@@ -15,7 +15,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/Footer";
-import { AppProvider } from "./providers/AppProvider";
+import LoginPage from "./components/LoginPage";
+import { AppProvider, useAppContext } from "./providers/AppProvider";
 import { initTimezoneCookie } from "./tz";
 
 initTimezoneCookie();
@@ -33,6 +34,10 @@ export const links: Route.LinksFunction = () => [
   {
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap",
   },
 ];
 
@@ -69,7 +74,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-        <meta name="apple-mobile-web-app-title" content="Koito" />
+        <meta name="apple-mobile-web-app-title" content="BauCadence" />
         <link rel="manifest" href="/site.webmanifest" />
         <Meta />
         <Links />
@@ -83,23 +88,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppShell() {
+  const { user, loginGate } = useAppContext();
+
+  // When login-gating is enabled, an unauthenticated visitor never sees
+  // the dashboard shell (or its data-fetching requests, which would just
+  // 401 anyway) — they see a dedicated login screen instead.
+  if (!user && loginGate) {
+    return <LoginPage />;
+  }
+
+  return (
+    <div className="flex-col flex sm:flex-row">
+      <Sidebar />
+      <div className="flex flex-col items-center mx-auto w-full ml-0 sm:ml-[58px]">
+        <Outlet />
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
-    <>
-      <AppProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <div className="flex-col flex sm:flex-row">
-              <Sidebar />
-              <div className="flex flex-col items-center mx-auto w-full ml-0 sm:ml-[58px]">
-                <Outlet />
-                <Footer />
-              </div>
-            </div>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </AppProvider>
-    </>
+    <AppProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppShell />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </AppProvider>
   );
 }
 
@@ -124,7 +142,7 @@ export function ErrorBoundary() {
     stack = error.stack;
   }
 
-  const title = `${message} - Koito`;
+  const title = `${message} - BauCadence`;
 
   return (
     <AppProvider>

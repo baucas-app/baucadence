@@ -1,17 +1,13 @@
 import { getCfg, type User } from "api/api";
 import { createContext, useContext, useEffect, useState } from "react";
 import pkg from "../../package.json";
-import semver from "semver";
-
-function isNewerVersion(current: string, latest: string): boolean {
-  return semver.gt(latest, current);
-}
 
 interface AppContextType {
   user: User | null | undefined;
   configurableHomeActivity: boolean;
   homeItems: number;
   defaultTheme: string;
+  loginGate: boolean;
   currentVersion: string;
   updateAvailable: boolean;
   firstActivity: Date | undefined;
@@ -38,6 +34,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [configurableHomeActivity, setConfigurableHomeActivity] =
     useState<boolean>(false);
   const [homeItems, setHomeItems] = useState<number>(0);
+  const [loginGate, setLoginGate] = useState<boolean>(false);
 
   const setUsername = (value: string) => {
     if (!user) {
@@ -48,7 +45,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const currentVersion = import.meta.env.VITE_KOITO_VERSION || pkg.version;
 
-  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
+  // Kept in context (always false) since a couple of UI badges still
+  // reference it; this fork doesn't have its own update feed yet.
+  const updateAvailable = false;
   const [firstActivity, setFirstActivity] = useState<Date | undefined>();
 
   useEffect(() => {
@@ -69,6 +68,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setDefaultTheme("yuu");
       }
+      setLoginGate(cfg.login_gate);
     });
 
     fetch("/apis/web/v1/first-activity")
@@ -81,15 +81,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    fetch("https://api.github.com/repos/gabehf/koito/releases/latest")
-      .then((r) => r.json())
-      .then((r) => {
-        setUpdateAvailable(isNewerVersion(currentVersion, r.tag_name));
-      })
-      .catch((err) => console.log(err));
-  }, []);
-
   // Block rendering the app until config is loaded
   if (user === undefined || defaultTheme === undefined) {
     return null;
@@ -100,6 +91,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     configurableHomeActivity,
     homeItems,
     defaultTheme,
+    loginGate,
     currentVersion,
     updateAvailable,
     firstActivity,

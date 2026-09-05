@@ -1,6 +1,6 @@
 {
-  "name": "Koito",
-  "short_name": "Koito",
+  "name": "BauCadence",
+  "short_name": "BauCadence",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -16,7 +16,7 @@
     }
   ],
   "start_url": ".",
-  "theme_color": "#111111",
-  "background_color": "#111111",
+  "theme_color": "#39543f",
+  "background_color": "#08090a",
   "display": "standalone"
 }

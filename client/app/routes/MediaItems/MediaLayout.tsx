@@ -60,7 +60,7 @@ export default function MediaLayout(props: Props) {
     window.location.reload();
   };
 
-  const title = `${props.title} - Koito`;
+  const title = `${props.title} - BauCadence`;
 
   const mobileIconSize = 22;
   const normalIconSize = 30;

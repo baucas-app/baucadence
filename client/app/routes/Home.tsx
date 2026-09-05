@@ -11,7 +11,7 @@ import TopAlbumsCard from "~/components/TopAlbumsCard";
 import PinnedItemGrid from "~/components/PinnedItemGrid";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Koito" }, { name: "description", content: "Koito" }];
+  return [{ title: "BauCadence" }, { name: "description", content: "BauCadence" }];
 }
 
 export default function Home() {

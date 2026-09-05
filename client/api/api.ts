@@ -486,6 +486,7 @@ type ApiError = {
 };
 type Config = {
   default_theme: string;
+  login_gate: boolean;
 };
 type NowPlaying = {
   currently_playing: boolean;

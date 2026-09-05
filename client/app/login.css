@@ -1,0 +1,267 @@
+/* Deliberately fixed palette (not the user's selected in-app theme): a
+   quiet black-and-white login screen with one Le Corbusier accent, the
+   same on every visit regardless of which dashboard theme is active. */
+.login-page {
+  --lp-accent: #39543f;
+  --lp-accent-dim: #243629;
+  --lp-accent-soft: rgba(57, 84, 63, 0.18);
+  --lp-bg: #08090a;
+  --lp-bg-vignette: #141d17;
+  --lp-card: #fafaf8;
+  --lp-ink: #14161b;
+  --lp-ink-secondary: #5b5d63;
+  --lp-ink-tertiary: #8c8e93;
+  --lp-field: #f1eeea;
+  --lp-field-border: #dcd8d2;
+  --lp-on-dark: #f0f0ee;
+  --lp-on-dark-secondary: #83868f;
+  --lp-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 18px 30px -10px rgba(0, 0, 0, 0.55),
+    0 60px 90px -30px rgba(0, 0, 0, 0.7);
+
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background:
+    radial-gradient(
+      900px 500px at 50% -10%,
+      var(--lp-bg-vignette),
+      transparent 60%
+    ),
+    var(--lp-bg);
+  color: var(--lp-on-dark);
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  overflow-y: auto;
+}
+
+.login-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  width: 100%;
+}
+
+.login-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--lp-on-dark-secondary);
+}
+.login-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--lp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px -6px rgba(57, 84, 63, 0.7);
+  flex: none;
+}
+.login-mark svg {
+  width: 18px;
+  height: 18px;
+}
+.login-wordmark span:last-child {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  color: var(--lp-on-dark);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 376px;
+  background: var(--lp-card);
+  border-radius: 20px;
+  padding: 38px 34px 32px;
+  box-shadow: var(--lp-shadow);
+}
+.login-card h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  text-wrap: balance;
+  color: var(--lp-ink);
+}
+.login-sub {
+  margin: 0 0 28px;
+  color: var(--lp-ink-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  max-width: 34ch;
+}
+.login-sub strong {
+  color: var(--lp-ink);
+  font-weight: 600;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.login-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lp-ink-tertiary);
+}
+.login-field input {
+  background: var(--lp-field);
+  border: 1px solid var(--lp-field-border);
+  color: var(--lp-ink);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+.login-field input::placeholder {
+  color: var(--lp-ink-tertiary);
+}
+.login-field input:focus {
+  background: #fff;
+  border-color: var(--lp-accent);
+  box-shadow: 0 0 0 3px var(--lp-accent-soft);
+}
+
+.login-field-pw {
+  position: relative;
+}
+.login-field-pw input {
+  padding-right: 42px;
+}
+.login-pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 32px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--lp-ink-tertiary);
+  border-radius: 7px;
+  cursor: pointer;
+}
+.login-pw-toggle:hover {
+  color: var(--lp-ink);
+  background: rgba(20, 19, 18, 0.06);
+}
+
+.login-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -2px;
+}
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.login-remember input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 1.5px solid var(--lp-ink-tertiary);
+  background: var(--lp-field);
+  cursor: pointer;
+  position: relative;
+  flex: none;
+}
+.login-remember input[type="checkbox"]:checked {
+  background: var(--lp-accent);
+  border-color: var(--lp-accent);
+}
+.login-remember input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4.5px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fafaf8;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.login-remember label {
+  font-size: 0.83rem;
+  color: var(--lp-ink-secondary);
+  cursor: pointer;
+}
+
+.login-submit {
+  margin-top: 8px;
+  background: var(--lp-accent);
+  color: #f7f7f5;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 14px 24px -10px rgba(57, 84, 63, 0.55);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+.login-submit:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+.login-submit:active {
+  transform: translateY(0px);
+}
+.login-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+  transform: none;
+}
+.login-submit:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 3px;
+}
+
+.login-error {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--lp-field);
+  border: 1.5px solid var(--lp-ink);
+  color: var(--lp-ink);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.login-error svg {
+  flex: none;
+  margin-top: 1px;
+}
