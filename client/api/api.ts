@@ -558,6 +558,7 @@ type UploadImportResponse = {
 };
 type ImportFileProgress = {
   filename: string;
+  source?: string;
   total: number; // -1 if the format doesn't allow knowing this upfront
   processed: number;
   done: boolean;

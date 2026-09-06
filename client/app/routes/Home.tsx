@@ -34,19 +34,25 @@ export default function Home() {
           <AllTimeStats />
           <ActivityGrid configurable />
         </div>
-        <DailyListensChart />
-        <PeriodSelector setter={setPeriod} current={period} />
-        <div className="container justify-center flex flex-wrap gap-10">
-          {/*<PinnedItemGrid />*/}
-          <TopArtistsCard period={period} />
-          <TopAlbumsCard period={period} />
-          <MoodInsightCard period={period} />
-          <TopTracks
-            period={period}
-            limit={10}
-            className="min-w-[350px] w-full max-w-[750px] 2xl:max-w-[450px]"
+        <div className="flex flex-col items-stretch gap-10">
+          <DailyListensChart />
+          <PeriodSelector
+            setter={setPeriod}
+            current={period}
+            className="self-center"
           />
-          <LastPlayed showNowPlaying={true} limit={28} showSeeMore />
+          <div className="container justify-center flex flex-wrap gap-10">
+            {/*<PinnedItemGrid />*/}
+            <TopArtistsCard period={period} />
+            <TopAlbumsCard period={period} />
+            <MoodInsightCard period={period} />
+            <TopTracks
+              period={period}
+              limit={10}
+              className="min-w-[350px] w-full max-w-[750px] 2xl:max-w-[450px]"
+            />
+            <LastPlayed showNowPlaying={true} limit={28} showSeeMore />
+          </div>
         </div>
       </div>
     </main>

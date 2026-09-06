@@ -162,7 +162,10 @@ type GetExportPageOpts struct {
 }
 
 type GetInterestOpts struct {
-	Buckets  int
+	Buckets int
+	// Days constrains the window to the last N days, ending now. 0 means
+	// the entire listen history (starting at the entity's first listen).
+	Days     int
 	AlbumID  int32
 	ArtistID int32
 	TrackID  int32

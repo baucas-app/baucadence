@@ -6,10 +6,9 @@ import ThemeHelper from "../../routes/ThemeHelper";
 import { useAppContext } from "~/providers/AppProvider";
 import ApiKeysModal from "./ApiKeysModal";
 import { AsyncButton } from "../AsyncButton";
-import ExportModal from "./ExportModal";
 import SourcesModal from "./SourcesModal";
 import UsersModal from "./UsersModal";
-import ImportModal from "./ImportModal";
+import ImportExportSection from "./ImportExportSection";
 import About from "./About";
 
 interface Props {
@@ -18,7 +17,8 @@ interface Props {
 }
 
 export default function SettingsModal({ open, setOpen }: Props) {
-  const { user, updateAvailable } = useAppContext();
+  const { user, updateAvailable, settingsTab, settingsImportExportView } =
+    useAppContext();
 
   const triggerClasses =
     "px-1 sm:px-4 py-2 w-full hover-bg-secondary " +
@@ -30,7 +30,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
   return (
     <Modal h={700} isOpen={open} onClose={() => setOpen(false)} maxW={1000}>
       <Tabs
-        defaultValue="Appearance"
+        defaultValue={settingsTab}
         orientation="vertical"
         className="flex flex-col sm:flex-row h-full"
       >
@@ -88,14 +88,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
               <UsersModal />
             </TabsContent>
             <TabsContent value="Export" className={contentClasses}>
-              <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
-                <div className="lg:flex-1">
-                  <ExportModal />
-                </div>
-                <div className="lg:flex-1">
-                  <ImportModal />
-                </div>
-              </div>
+              <ImportExportSection initialView={settingsImportExportView} />
             </TabsContent>
           </>
         )}

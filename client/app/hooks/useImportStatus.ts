@@ -15,8 +15,14 @@ export interface ImportStatusSummary {
   refetch: () => void;
 }
 
-function knownTotalFiles(files: ImportFileProgress[]) {
-  return files.filter((f) => f.total > 0 && !f.error);
+// How far along a single file is, from 0 to 1 - regardless of whether its
+// total item count is known yet. A file that hasn't revealed its total yet
+// contributes 0, not some placeholder value, so it doesn't inflate the
+// overall progress before any real work has happened on it.
+function fileCompletionFraction(f: ImportFileProgress): number {
+  if (f.done || f.error) return 1;
+  if (f.total > 0) return Math.min(1, f.processed / f.total);
+  return 0;
 }
 
 export function useImportStatus(): ImportStatusSummary {
@@ -39,15 +45,18 @@ export function useImportStatus(): ImportStatusSummary {
   const anyActive = files.some((f) => !f.done && !f.error);
   const allFinished = files.length > 0 && !anyActive;
 
-  const known = knownTotalFiles(files);
-  const totalKnown = known.reduce((s, f) => s + f.total, 0);
-  const processedKnown = known.reduce((s, f) => s + f.processed, 0);
+  // Every file counts equally toward the overall figure, whether or not
+  // its own item count is known yet - so a batch of 10 files where only
+  // 1 has started doesn't read as "80% done" just because that one file
+  // happens to be 80% through itself.
+  const overallFraction =
+    files.length > 0
+      ? files.reduce((s, f) => s + fileCompletionFraction(f), 0) / files.length
+      : 0;
   const overallPct =
-    totalKnown > 0
-      ? Math.round((processedKnown / totalKnown) * 100)
-      : undefined;
+    files.length > 0 ? Math.round(overallFraction * 100) : undefined;
 
-  const rateRef = useRef<{ time: number; processed: number } | null>(null);
+  const rateRef = useRef<{ time: number; fraction: number } | null>(null);
   const [etaSeconds, setEtaSeconds] = useState<number>();
 
   useEffect(() => {
@@ -58,18 +67,18 @@ export function useImportStatus(): ImportStatusSummary {
     }
     const now = Date.now();
     const prev = rateRef.current;
-    if (prev && totalKnown > 0) {
+    if (prev) {
       const dt = (now - prev.time) / 1000;
-      const dp = processedKnown - prev.processed;
-      if (dt > 0 && dp > 0) {
-        const rate = dp / dt;
-        const remaining = totalKnown - processedKnown;
+      const dFrac = overallFraction - prev.fraction;
+      if (dt > 0 && dFrac > 0) {
+        const rate = dFrac / dt;
+        const remaining = 1 - overallFraction;
         setEtaSeconds(remaining > 0 ? remaining / rate : 0);
       }
     }
-    rateRef.current = { time: now, processed: processedKnown };
+    rateRef.current = { time: now, fraction: overallFraction };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [processedKnown, totalKnown, anyActive]);
+  }, [overallFraction, anyActive]);
 
   return { files, anyActive, allFinished, overallPct, etaSeconds, refetch };
 }

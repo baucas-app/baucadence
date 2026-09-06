@@ -297,12 +297,17 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 		}
 	}()
 	names := make([]string, 0, len(files))
+	batchFiles := make([]importprogress.BatchFile, 0, len(files))
 	for _, file := range files {
 		if !file.IsDir() {
 			names = append(names, file.Name())
+			batchFiles = append(batchFiles, importprogress.BatchFile{
+				Filename: file.Name(),
+				Source:   importer.SourceLabel(file.Name()),
+			})
 		}
 	}
-	importprogress.StartBatch(names)
+	importprogress.StartBatch(batchFiles)
 	for _, name := range names {
 		if err := importer.DetectAndImportFile(logger.NewContext(l), store, mbzc, name); err != nil {
 			l.Warn().Err(err).Msgf("Importer: Failed to import file: %s", name)

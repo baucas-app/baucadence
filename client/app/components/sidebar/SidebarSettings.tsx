@@ -1,7 +1,7 @@
-import { Settings2 } from "lucide-react";
+import { Settings } from "lucide-react";
 import SettingsModal from "../modals/SettingsModal";
 import SidebarItem from "./SidebarItem";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppContext } from "~/providers/AppProvider";
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 }
 
 export default function SidebarSettings({ size }: Props) {
-  const [open, setOpen] = useState(false);
-  const { updateAvailable } = useAppContext();
+  const { updateAvailable, settingsOpen, setSettingsOpen, openSettings } =
+    useAppContext();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -23,23 +23,23 @@ export default function SidebarSettings({ size }: Props) {
 
       if (!isTyping && e.key === "\\") {
         e.preventDefault();
-        setOpen(!open);
+        setSettingsOpen(!settingsOpen);
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, [settingsOpen]);
 
   return (
     <SidebarItem
       space={30}
       keyHint="\"
       name="Settings"
-      onClick={() => setOpen(true)}
-      modal={<SettingsModal open={open} setOpen={setOpen} />}
+      onClick={() => openSettings()}
+      modal={<SettingsModal open={settingsOpen} setOpen={setSettingsOpen} />}
     >
-      <Settings2 size={size} />
+      <Settings size={size} />
       {updateAvailable && (
         <div className="h-1.5 w-1.5 rounded-full bg-(--color-info) absolute top-1 right-1" />
       )}

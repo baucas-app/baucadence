@@ -10,12 +10,7 @@ export default function OverallImportProgress({ summary, bordered }: Props) {
   if (files.length === 0) return null;
 
   const hasError = files.some((f) => f.error);
-
-  const width = allFinished
-    ? "100%"
-    : overallPct !== undefined
-      ? `${overallPct}%`
-      : "35%";
+  const pct = allFinished ? 100 : (overallPct ?? 0);
 
   return (
     <div
@@ -32,11 +27,7 @@ export default function OverallImportProgress({ summary, bordered }: Props) {
             : "Overall progress"}
         </span>
         <span className="shrink-0 color-fg-secondary">
-          {allFinished
-            ? "100%"
-            : overallPct !== undefined
-              ? `${overallPct}%`
-              : "processing…"}
+          {pct}%
           {anyActive &&
             etaSeconds !== undefined &&
             ` · ${formatEta(etaSeconds)} left`}
@@ -49,7 +40,7 @@ export default function OverallImportProgress({ summary, bordered }: Props) {
               ? "bg-(--color-error)"
               : "bg-(--color-primary)"
           }`}
-          style={{ width }}
+          style={{ width: `${pct}%` }}
         />
       </div>
     </div>

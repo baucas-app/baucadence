@@ -9,12 +9,22 @@ import "sync"
 
 type FileProgress struct {
 	Filename string `json:"filename"`
+	// Source is a short human-readable label for the service the file
+	// came from (e.g. "Spotify"), or "" if unknown.
+	Source string `json:"source,omitempty"`
 	// Total is the number of items to process, or -1 if that isn't known
 	// upfront for this format (the UI should show an indeterminate state).
 	Total     int    `json:"total"`
 	Processed int    `json:"processed"`
 	Done      bool   `json:"done"`
 	Error     string `json:"error,omitempty"`
+}
+
+// BatchFile identifies one file to track progress for, along with the
+// source label to display for it.
+type BatchFile struct {
+	Filename string
+	Source   string
 }
 
 var (
@@ -25,12 +35,12 @@ var (
 // StartBatch resets progress tracking for a new set of files about to be
 // imported, in order. Only one batch is tracked at a time, which is fine
 // for a single-user self-hosted instance running one import job at once.
-func StartBatch(filenames []string) {
+func StartBatch(files []BatchFile) {
 	mu.Lock()
 	defer mu.Unlock()
-	batch = make([]*FileProgress, len(filenames))
-	for i, f := range filenames {
-		batch[i] = &FileProgress{Filename: f, Total: -1}
+	batch = make([]*FileProgress, len(files))
+	for i, f := range files {
+		batch[i] = &FileProgress{Filename: f.Filename, Source: f.Source, Total: -1}
 	}
 }
 

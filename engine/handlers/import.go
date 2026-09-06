@@ -32,6 +32,12 @@ type RecognizeImportFilename func(name string) bool
 // for the same reason as RecognizeImportFilename above.
 type RunImportFile func(ctx context.Context, filename string) error
 
+// ImportSourceLabel returns a short, human-readable label for the service
+// a recognized filename came from (e.g. "Spotify"). Implemented by
+// internal/importer.SourceLabel and injected in for the same reason as
+// RecognizeImportFilename above.
+type ImportSourceLabel func(name string) string
+
 // UploadImportHandler lets an admin upload a listening-history export
 // (a single recognized file, or a .zip containing one or more of them,
 // e.g. a Spotify "Extended Streaming History" export or a Google Takeout
@@ -39,7 +45,7 @@ type RunImportFile func(ctx context.Context, filename string) error
 // import directory by hand. Recognized files are saved into the same
 // import directory the startup scanner uses, then imported in the
 // background using the same per-format importer.
-func UploadImportHandler(recognize RecognizeImportFilename, runImport RunImportFile) http.HandlerFunc {
+func UploadImportHandler(recognize RecognizeImportFilename, runImport RunImportFile, sourceLabel ImportSourceLabel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
@@ -105,7 +111,11 @@ func UploadImportHandler(recognize RecognizeImportFilename, runImport RunImportF
 		}
 
 		l.Info().Strs("files", saved).Msg("UploadImportHandler: Starting background import of uploaded file(s)")
-		importprogress.StartBatch(saved)
+		batchFiles := make([]importprogress.BatchFile, len(saved))
+		for i, name := range saved {
+			batchFiles[i] = importprogress.BatchFile{Filename: name, Source: sourceLabel(name)}
+		}
+		importprogress.StartBatch(batchFiles)
 		go func() {
 			bgCtx := logger.NewContext(l)
 			for _, name := range saved {

@@ -31,6 +31,28 @@ func RecognizeFilename(name string) bool {
 	}
 }
 
+// SourceLabel returns a short, human-readable label for the service a
+// recognized export filename came from (e.g. "Spotify"), or "" if the
+// filename isn't recognized.
+func SourceLabel(name string) string {
+	switch {
+	case strings.Contains(name, "Streaming_History_Audio"):
+		return "Spotify"
+	case strings.Contains(name, "maloja"):
+		return "Maloja"
+	case strings.Contains(name, "recenttracks"):
+		return "Last.fm"
+	case strings.Contains(name, "listenbrainz"):
+		return "ListenBrainz"
+	case strings.Contains(name, "koito"):
+		return "Koito"
+	case strings.Contains(name, "watch-history"):
+		return "YouTube / YouTube Music"
+	default:
+		return ""
+	}
+}
+
 // DetectAndImportFile dispatches filename to the importer matching its
 // naming convention. filename must already exist in the configured
 // "import" directory.

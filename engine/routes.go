@@ -147,6 +147,7 @@ func bindRoutes(
 					func(ctx context.Context, filename string) error {
 						return importer.DetectAndImportFile(ctx, db, mbz, filename)
 					},
+					importer.SourceLabel,
 				))
 			r.Get("/import/status", handlers.ImportStatusHandler())
 		})

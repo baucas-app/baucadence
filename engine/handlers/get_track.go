@@ -105,9 +105,12 @@ func GetTrackInterestHandler(store db.ListenStore) http.HandlerFunc {
 			return
 		}
 
+		days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+
 		interest, err := store.GetInterest(ctx, db.GetInterestOpts{
 			TrackID: trackID,
 			Buckets: buckets,
+			Days:    days,
 		})
 		if err != nil {
 			l.Err(err).Msg("GetTrackInterestHandler: Failed to query interest")

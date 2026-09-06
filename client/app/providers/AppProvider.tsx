@@ -11,6 +11,11 @@ interface AppContextType {
   currentVersion: string;
   updateAvailable: boolean;
   firstActivity: Date | undefined;
+  settingsOpen: boolean;
+  settingsTab: string;
+  settingsImportExportView: "export" | "import";
+  setSettingsOpen: (value: boolean) => void;
+  openSettings: (tab?: string, importExportView?: "export" | "import") => void;
   setConfigurableHomeActivity: (value: boolean) => void;
   setHomeItems: (value: number) => void;
   setUsername: (value: string) => void;
@@ -49,6 +54,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // reference it; this fork doesn't have its own update feed yet.
   const updateAvailable = false;
   const [firstActivity, setFirstActivity] = useState<Date | undefined>();
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState("Appearance");
+  const [settingsImportExportView, setSettingsImportExportView] = useState<
+    "export" | "import"
+  >("export");
+
+  const openSettings = (
+    tab: string = "Appearance",
+    importExportView: "export" | "import" = "export",
+  ) => {
+    setSettingsTab(tab);
+    setSettingsImportExportView(importExportView);
+    setSettingsOpen(true);
+  };
 
   useEffect(() => {
     fetch("/apis/web/v1/user")
@@ -95,6 +115,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     currentVersion,
     updateAvailable,
     firstActivity,
+    settingsOpen,
+    settingsTab,
+    settingsImportExportView,
+    setSettingsOpen,
+    openSettings,
     setConfigurableHomeActivity,
     setHomeItems,
     setUsername,

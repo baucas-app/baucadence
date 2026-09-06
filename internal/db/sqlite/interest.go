@@ -77,6 +77,12 @@ func (s *Sqlite) GetInterest(ctx context.Context, opts db.GetInterestOpts) ([]db
 
 	start := timestamps[0]
 	end := time.Now().Unix()
+	if opts.Days > 0 {
+		cutoff := end - int64(opts.Days)*86400
+		if cutoff > start {
+			start = cutoff
+		}
+	}
 	totalSeconds := end - start
 	n := int64(opts.Buckets)
 
@@ -88,6 +94,9 @@ func (s *Sqlite) GetInterest(ctx context.Context, opts db.GetInterestOpts) ([]db
 
 	counts := make([]int64, opts.Buckets)
 	for _, ts := range timestamps {
+		if ts < start {
+			continue
+		}
 		idx := (ts - start) * n / (totalSeconds + 1)
 		if idx >= n {
 			idx = n - 1

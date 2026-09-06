@@ -4,12 +4,14 @@ interface Props {
   setter: Function;
   current: string;
   disableCache?: boolean;
+  className?: string;
 }
 
 export default function PeriodSelector({
   setter,
   current,
   disableCache = false,
+  className,
 }: Props) {
   const periods = ["day", "week", "month", "year", "all_time"];
 
@@ -18,7 +20,7 @@ export default function PeriodSelector({
       w
         .split("")
         .map((char, index) => (index === 0 ? char.toUpperCase() : char))
-        .join("")
+        .join(""),
     )[0];
   };
 
@@ -27,7 +29,7 @@ export default function PeriodSelector({
     if (!disableCache) {
       localStorage.setItem(
         "period_selection_" + window.location.pathname.split("/")[1],
-        val
+        val,
       );
     }
   };
@@ -35,7 +37,7 @@ export default function PeriodSelector({
   useEffect(() => {
     if (!disableCache) {
       const cached = localStorage.getItem(
-        "period_selection_" + window.location.pathname.split("/")[1]
+        "period_selection_" + window.location.pathname.split("/")[1],
       );
       if (cached) {
         setter(cached);
@@ -44,7 +46,9 @@ export default function PeriodSelector({
   }, []);
 
   return (
-    <div className="flex gap-2 grow-0 text-sm sm:text-[16px] px-3 sm:px-6 py-2 card">
+    <div
+      className={`flex gap-2 grow-0 text-sm sm:text-[16px] px-3 sm:px-6 py-2 card ${className ?? ""}`}
+    >
       {periods.map((p, i) => (
         <div key={`period_setter_${p}`}>
           <button
