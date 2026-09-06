@@ -55,3 +55,10 @@ type InterestBucket struct {
 	BucketEnd   time.Time `json:"bucket_end"`
 	ListenCount int64     `json:"listen_count"`
 }
+
+// TagWeight is a single mood/genre folksonomy tag (e.g. from LastFM) with its
+// relevance score.
+type TagWeight struct {
+	Tag    string
+	Weight int
+}

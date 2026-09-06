@@ -9,9 +9,14 @@ import PeriodSelector from "~/components/PeriodSelector";
 import { useAppContext } from "~/providers/AppProvider";
 import TopAlbumsCard from "~/components/TopAlbumsCard";
 import PinnedItemGrid from "~/components/PinnedItemGrid";
+import DailyListensChart from "~/components/DailyListensChart";
+import MoodInsightCard from "~/components/MoodInsightCard";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "BauCadence" }, { name: "description", content: "BauCadence" }];
+  return [
+    { title: "BauCadence" },
+    { name: "description", content: "BauCadence" },
+  ];
 }
 
 export default function Home() {
@@ -29,11 +34,13 @@ export default function Home() {
           <AllTimeStats />
           <ActivityGrid configurable />
         </div>
+        <DailyListensChart />
         <PeriodSelector setter={setPeriod} current={period} />
         <div className="container justify-center flex flex-wrap gap-10">
           {/*<PinnedItemGrid />*/}
           <TopArtistsCard period={period} />
           <TopAlbumsCard period={period} />
+          <MoodInsightCard period={period} />
           <TopTracks
             period={period}
             limit={10}

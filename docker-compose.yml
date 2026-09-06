@@ -27,4 +27,8 @@ services:
       # --- YouTube / YouTube Music (cookie is entered in the app's Settings > Sources tab, not here) ---
       - SCROBLLI_YTMUSIC_ENABLED=true
       - SCROBLLI_YTMUSIC_TRACK_VIDEOS=false
+
+      # --- LastFM (optional; enables artist/album art fallback and the homepage
+      # mood insight card). Get a free key at last.fm/api/account/create ---
+      - KOITO_LASTFM_API_KEY=
     restart: unless-stopped

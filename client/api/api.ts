@@ -587,6 +587,13 @@ type RewindStats = {
   new_albums: number;
   new_artists: number;
 };
+type MoodInsight = {
+  enabled: boolean;
+  mood: string;
+  coverage: number;
+  top_tags: string[];
+  top_tracks: SimpleTrack[];
+};
 
 export type {
   getItemsArgs,
@@ -613,4 +620,6 @@ export type {
   ImageList,
   UploadImportResponse,
   ImportFileProgress,
+  SimpleTrack,
+  MoodInsight,
 };

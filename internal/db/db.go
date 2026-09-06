@@ -65,6 +65,9 @@ type TrackStore interface {
 	CountTracks(ctx context.Context, timeframe Timeframe) (int64, error)
 	CountNewTracks(ctx context.Context, timeframe Timeframe) (int64, error)
 	AddArtistsToAlbum(ctx context.Context, opts AddArtistsToAlbumOpts) error
+	GetTracksMissingTags(ctx context.Context, from int32) ([]*models.Track, error)
+	SetTrackTags(ctx context.Context, id int32, tags []TagWeight) error
+	GetTagsForTracks(ctx context.Context, ids []int32) (map[int32][]TagWeight, error)
 }
 
 type ListenStore interface {

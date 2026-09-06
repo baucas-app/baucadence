@@ -1,8 +1,55 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch, type InterestBucket } from "api/api";
 import { useTheme } from "~/hooks/useTheme";
-import { Area, AreaChart } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 import CardHeader from "./primitives/CardHeader";
+
+const formatTick = (value: string | Date) =>
+  new Date(value).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+
+const formatRange = (bucket: InterestBucket) => {
+  const start = new Date(bucket.bucket_start);
+  const end = new Date(bucket.bucket_end);
+  if (start.toDateString() === end.toDateString()) {
+    return start.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+  return `${formatTick(start)} – ${formatTick(end)}`;
+};
+
+function InterestTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: InterestBucket }[];
+}) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+  const bucket = payload[0].payload;
+  return (
+    <div className="card px-3 py-2 text-[12px]">
+      <div className="text-(--color-fg-secondary)">{formatRange(bucket)}</div>
+      <div className="font-medium">
+        {bucket.listen_count} {bucket.listen_count === 1 ? "listen" : "listens"}
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   buckets?: number;
@@ -50,16 +97,16 @@ export default function InterestGraph({ buckets = 16, type, id }: Props) {
   return (
     <div className="flex flex-col items-start">
       <CardHeader isOffset>{title}</CardHeader>
-      <div className="flex flex-col items-center w-[350px] sm:w-[514px] md:w-[550px] h-[150px] sm:h-[175px] text-[12px] p-6 card">
+      <div className="flex flex-col items-center w-[350px] sm:w-[514px] md:w-[550px] h-[180px] sm:h-[205px] text-[12px] p-6 card">
         <AreaChart
           style={{
             width: "100%",
             maxWidth: 450,
             overflow: "visible",
-            height: "120px",
+            height: "150px",
           }}
           data={data}
-          margin={{ top: 20, bottom: 15 }}
+          margin={{ top: 20, bottom: 5, left: -20 }}
         >
           <defs>
             <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -67,6 +114,26 @@ export default function InterestGraph({ buckets = 16, type, id }: Props) {
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
+          <CartesianGrid vertical={false} stroke="var(--color-bg-tertiary)" />
+          <XAxis
+            dataKey="bucket_start"
+            tickFormatter={formatTick}
+            tick={{ fill: "var(--color-fg-secondary)", fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: "var(--color-bg-tertiary)" }}
+            minTickGap={24}
+          />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fill: "var(--color-fg-secondary)", fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+            width={36}
+          />
+          <Tooltip
+            content={<InterestTooltip />}
+            cursor={{ stroke: "var(--color-bg-tertiary)", strokeWidth: 1 }}
+          />
           <Area
             dataKey="listen_count"
             type="natural"
@@ -85,7 +152,7 @@ export default function InterestGraph({ buckets = 16, type, id }: Props) {
             animationDuration={0}
             animationEasing="ease-in-out"
             dot={false}
-            activeDot={false}
+            activeDot={{ r: 4, fill: color, stroke: "var(--color-bg)" }}
             style={{ filter: `drop-shadow(0px 0px 0px ${color})` }}
           />
         </AreaChart>
@@ -98,8 +165,8 @@ export function InterestGraphSkeleton() {
   return (
     <div className="flex flex-col items-start">
       <CardHeader isOffset>Interest over time</CardHeader>
-      <div className="flex flex-col items-center w-[350px] sm:w-[550px] h-[175px] text-[12px] p-6 card">
-        <div className="w-full max-w-[450px] h-[120px] relative overflow-hidden rounded-(--border-radius) flex justify-around items-center">
+      <div className="flex flex-col items-center w-[350px] sm:w-[550px] h-[180px] sm:h-[205px] text-[12px] p-6 card">
+        <div className="w-full max-w-[450px] h-[150px] relative overflow-hidden rounded-(--border-radius) flex justify-around items-center">
           <div className="w-full h-3/4 bg rounded-(--border-radius) animate-pulse" />
         </div>
       </div>
