@@ -39,12 +39,12 @@ export default function Home() {
             {/*<PinnedItemGrid />*/}
             <TopArtistsCard period={period} />
             <TopAlbumsCard period={period} />
-            <MoodInsightCard period={period} />
             <TopGenresCard
               period={period}
               limit={10}
               className="min-w-[350px] w-full max-w-[750px] 2xl:max-w-[450px]"
             />
+            <MoodInsightCard period={period} />
             <LastPlayed showNowPlaying={true} limit={28} showSeeMore />
           </div>
         </div>

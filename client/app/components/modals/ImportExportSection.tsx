@@ -22,16 +22,16 @@ export default function ImportExportSection({ initialView }: Props) {
     <div>
       <div className="flex gap-2 mb-6">
         <button
-          className={btnClasses(view === "export")}
-          onClick={() => setView("export")}
-        >
-          Export
-        </button>
-        <button
           className={btnClasses(view === "import")}
           onClick={() => setView("import")}
         >
           Import
+        </button>
+        <button
+          className={btnClasses(view === "export")}
+          onClick={() => setView("export")}
+        >
+          Export
         </button>
       </div>
       {view === "export" ? <ExportModal /> : <ImportModal />}
