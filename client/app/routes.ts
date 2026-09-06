@@ -3,6 +3,7 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   index("routes/Home.tsx"),
   route("/all-time", "routes/AllTime.tsx"),
+  route("/videos", "routes/Videos.tsx"),
   route("/artist/:id", "routes/MediaItems/Artist.tsx"),
   route("/album/:id", "routes/MediaItems/Album.tsx"),
   route("/track/:id", "routes/MediaItems/Track.tsx"),

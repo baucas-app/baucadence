@@ -494,6 +494,24 @@ type Listen = {
   time: string;
   track: SimpleTrack;
 };
+type Video = {
+  id: number;
+  youtube_id: string;
+  title: string;
+  channel_id: string;
+  channel_name: string;
+  thumbnail: string;
+  category: string;
+  format: "video" | "short";
+};
+type VideoWatch = {
+  time: string;
+  video: Video;
+};
+type VideoCategoryCount = {
+  category: string;
+  count: number;
+};
 type PaginatedResponse<T> = {
   items: T[];
   total_record_count: number;
@@ -634,4 +652,7 @@ export type {
   MoodInsight,
   GenreRank,
   TopGenresResponse,
+  Video,
+  VideoWatch,
+  VideoCategoryCount,
 };

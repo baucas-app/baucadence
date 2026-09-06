@@ -8,4 +8,5 @@ type importStore interface {
 	db.AlbumStore
 	db.TrackStore
 	db.ListenStore
+	db.VideoStore
 }

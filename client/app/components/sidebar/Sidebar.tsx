@@ -1,4 +1,11 @@
-import { BarChart3, ExternalLink, History, Home, Info } from "lucide-react";
+import {
+  BarChart3,
+  Clapperboard,
+  ExternalLink,
+  History,
+  Home,
+  Info,
+} from "lucide-react";
 import SidebarSearch from "./SidebarSearch";
 import SidebarItem from "./SidebarItem";
 import SidebarSettings from "./SidebarSettings";
@@ -61,6 +68,15 @@ export default function Sidebar() {
           modal={<></>}
         >
           <BarChart3 size={iconSize} />
+        </SidebarItem>
+        <SidebarItem
+          space={10}
+          to="/videos"
+          name="Videos"
+          onClick={() => {}}
+          modal={<></>}
+        >
+          <Clapperboard size={iconSize} />
         </SidebarItem>
       </div>
       <div className="flex gap-4 sm:flex-col">

@@ -86,6 +86,13 @@ type ListenStore interface {
 	GetLongestListenStreak(ctx context.Context, opts ListenActivityOpts) (int, error)
 }
 
+type VideoStore interface {
+	UpsertVideo(ctx context.Context, opts SaveVideoOpts) (*models.Video, error)
+	SaveVideoWatch(ctx context.Context, opts SaveVideoWatchOpts) error
+	GetVideoWatchesPaginated(ctx context.Context, opts GetItemsOpts) (*PaginatedResponse[*models.VideoWatch], error)
+	GetVideoCategoryCounts(ctx context.Context, timeframe Timeframe) ([]VideoCategoryCount, error)
+}
+
 type UserStore interface {
 	GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
@@ -120,6 +127,7 @@ type DB interface {
 	AlbumStore
 	TrackStore
 	ListenStore
+	VideoStore
 	UserStore
 	ImageStore
 	ExportStore

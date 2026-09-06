@@ -24,6 +24,8 @@ const (
 	YTMUSIC_ENABLED_ENV      = "SCROBLLI_YTMUSIC_ENABLED"
 	YTMUSIC_POLL_SECONDS_ENV = "SCROBLLI_YTMUSIC_POLL_SECONDS"
 	YTMUSIC_TRACK_VIDEOS_ENV = "SCROBLLI_YTMUSIC_TRACK_VIDEOS"
+
+	YOUTUBE_DATA_API_KEY_ENV = "SCROBLLI_YOUTUBE_DATA_API_KEY"
 )
 
 const (
@@ -77,9 +79,21 @@ func YtmusicPollInterval() time.Duration {
 
 // YtmusicTrackVideosEnabled reports whether regular (non-music) YouTube
 // watch history should also be tracked, in addition to YouTube Music.
+//
+// This is only consulted when YoutubeDataApiKey is empty. Once that key is
+// set, regular YouTube video entries are always tracked - imported as
+// music listens if the video's category is Music, and as a Video watch
+// otherwise - since the API lets us tell the two apart instead of
+// shoehorning every non-Music video into the track catalog.
 func YtmusicTrackVideosEnabled() bool {
 	return strings.ToLower(os.Getenv(YTMUSIC_TRACK_VIDEOS_ENV)) == "true"
 }
+
+// YoutubeDataApiKey returns the API key used to look up video metadata
+// (title, channel, thumbnail, category) for regular YouTube videos found
+// in a Takeout watch-history import. This is a plain API key (no OAuth) -
+// video metadata is public data, unlike watch history itself.
+func YoutubeDataApiKey() string { return os.Getenv(YOUTUBE_DATA_API_KEY_ENV) }
 
 func pollInterval(env string, def int) time.Duration {
 	secs, err := strconv.Atoi(os.Getenv(env))

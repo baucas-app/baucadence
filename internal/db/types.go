@@ -33,6 +33,11 @@ type RankedItem[T any] struct {
 	Rank int64 `json:"rank"`
 }
 
+type VideoCategoryCount struct {
+	Category string `json:"category"`
+	Count    int64  `json:"count"`
+}
+
 type ExportItem struct {
 	ListenedAt         time.Time
 	UserID             int32

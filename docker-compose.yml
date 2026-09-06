@@ -28,6 +28,14 @@ services:
       - SCROBLLI_YTMUSIC_ENABLED=true
       - SCROBLLI_YTMUSIC_TRACK_VIDEOS=false
 
+      # --- YouTube Data API key (optional; free, from console.cloud.google.com,
+      # enable "YouTube Data API v3", create an API key - no OAuth needed).
+      # Used only to classify regular YouTube videos found in a Google Takeout
+      # watch-history import: Music-category videos are counted as listens,
+      # everything else goes to the separate Videos tab. Without this key,
+      # SCROBLLI_YTMUSIC_TRACK_VIDEOS above is the fallback (all-or-nothing). ---
+      - SCROBLLI_YOUTUBE_DATA_API_KEY=
+
       # --- LastFM (optional; enables artist/album art fallback and the homepage
       # mood insight card). Get a free key at last.fm/api/account/create ---
       - KOITO_LASTFM_API_KEY=

@@ -83,6 +83,23 @@ type SaveListenOpts struct {
 	Client  string
 }
 
+type SaveVideoOpts struct {
+	YoutubeID   string
+	Title       string
+	ChannelID   string
+	ChannelName string
+	Thumbnail   string
+	Category    string
+	Format      string
+}
+
+type SaveVideoWatchOpts struct {
+	VideoID int32
+	Time    time.Time
+	UserID  int32
+	Client  string
+}
+
 type UpdateTrackOpts struct {
 	ID            int32
 	MusicBrainzID uuid.UUID
@@ -134,6 +151,10 @@ type GetItemsOpts struct {
 
 	// Used for getting listens
 	TrackID int
+
+	// VideoFormat filters GetVideoWatchesPaginated to "video" or "short".
+	// Empty means no filter (both).
+	VideoFormat string
 }
 
 type ListenActivityOpts struct {
