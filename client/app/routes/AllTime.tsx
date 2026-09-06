@@ -1,5 +1,6 @@
 import AllTimeStats from "~/components/AllTimeStats";
 import ActivityGrid from "~/components/ActivityGrid";
+import TopTracks from "~/components/TopTracks";
 
 export function meta() {
   return [
@@ -16,6 +17,12 @@ export default function AllTime() {
           <AllTimeStats />
           <ActivityGrid configurable />
         </div>
+        <TopTracks
+          period="all_time"
+          limit={10}
+          showSeeMore
+          className="w-full max-w-[750px]"
+        />
       </div>
     </main>
   );

@@ -4,6 +4,8 @@ import CardHeader from "./primitives/CardHeader";
 
 interface Props {
   period: string;
+  limit?: number;
+  className?: string;
 }
 
 const getTopGenres = (args: { period: string; limit: number }) =>
@@ -13,17 +15,21 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const title = "Top genres";
 
-export default function TopGenresCard({ period }: Props) {
+export default function TopGenresCard({
+  period,
+  limit = 5,
+  className = "w-[350px]",
+}: Props) {
   const { isPending, isError, data, error } = useQuery({
-    queryKey: ["insights/genres", period],
-    queryFn: () => getTopGenres({ period, limit: 5 }),
+    queryKey: ["insights/genres", period, limit],
+    queryFn: () => getTopGenres({ period, limit }),
   });
 
   if (isPending) {
-    return <TopGenresCardSkeleton />;
+    return <TopGenresCardSkeleton className={className} count={limit} />;
   } else if (isError) {
     return (
-      <div className="flex flex-col items-start w-[350px]">
+      <div className={`flex flex-col items-start ${className}`}>
         <CardHeader isOffset>{title}</CardHeader>
         <p className="error">Error: {error.message}</p>
       </div>
@@ -36,17 +42,17 @@ export default function TopGenresCard({ period }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-start w-[350px]">
+    <div className={`flex flex-col items-start ${className}`}>
       <CardHeader isOffset>{title}</CardHeader>
       {data.genres.length === 0 ? (
-        <div className="max-w-[350px] w-full card p-6">
+        <div className="w-full card p-6">
           <p className="text-[13px] color-fg-secondary">
             Still learning your music taste for this period. Check back once
             more of your library has been analyzed.
           </p>
         </div>
       ) : (
-        <div className="max-w-[350px] w-full card p-6 flex flex-col gap-3">
+        <div className="w-full card p-6 flex flex-col gap-3">
           {data.genres.map((genre) => (
             <div
               key={genre.name}

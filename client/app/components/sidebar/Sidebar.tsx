@@ -3,8 +3,8 @@ import {
   Clapperboard,
   ExternalLink,
   History,
-  Home,
   Info,
+  Music,
 } from "lucide-react";
 import SidebarSearch from "./SidebarSearch";
 import SidebarItem from "./SidebarItem";
@@ -45,11 +45,20 @@ export default function Sidebar() {
         <SidebarItem
           space={10}
           to="/"
-          name="Home"
+          name="Music"
           onClick={() => {}}
           modal={<></>}
         >
-          <Home size={iconSize} />
+          <Music size={iconSize} />
+        </SidebarItem>
+        <SidebarItem
+          space={10}
+          to="/videos"
+          name="Videos"
+          onClick={() => {}}
+          modal={<></>}
+        >
+          <Clapperboard size={iconSize} />
         </SidebarItem>
         <SidebarItem
           space={10}
@@ -68,15 +77,6 @@ export default function Sidebar() {
           modal={<></>}
         >
           <BarChart3 size={iconSize} />
-        </SidebarItem>
-        <SidebarItem
-          space={10}
-          to="/videos"
-          name="Videos"
-          onClick={() => {}}
-          modal={<></>}
-        >
-          <Clapperboard size={iconSize} />
         </SidebarItem>
       </div>
       <div className="flex gap-4 sm:flex-col">

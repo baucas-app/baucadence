@@ -1,5 +1,4 @@
 import type { Route } from "./+types/Home";
-import TopTracks from "~/components/TopTracks";
 import LastPlayed from "~/components/LastPlayed";
 import TopArtistsCard from "~/components/TopArtistsCard";
 import { useState } from "react";
@@ -40,9 +39,8 @@ export default function Home() {
             {/*<PinnedItemGrid />*/}
             <TopArtistsCard period={period} />
             <TopAlbumsCard period={period} />
-            <TopGenresCard period={period} />
             <MoodInsightCard period={period} />
-            <TopTracks
+            <TopGenresCard
               period={period}
               limit={10}
               className="min-w-[350px] w-full max-w-[750px] 2xl:max-w-[450px]"
