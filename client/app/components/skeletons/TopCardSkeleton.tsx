@@ -12,7 +12,7 @@ export function TopCardSkeleton({
 }: TopCardSkeletonProps) {
   return (
     <div>
-      <CardHeader isOffset>{header}</CardHeader>
+      <CardHeader>{header}</CardHeader>
       <div className="max-w-[350px] card animate-pulse">
         <div
           className="relative bg"

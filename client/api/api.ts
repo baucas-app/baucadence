@@ -595,6 +595,15 @@ type MoodInsight = {
   top_tags: string[];
   top_tracks: SimpleTrack[];
 };
+type GenreRank = {
+  rank: number;
+  name: string;
+  listen_count: number;
+};
+type TopGenresResponse = {
+  enabled: boolean;
+  genres: GenreRank[];
+};
 
 export type {
   getItemsArgs,
@@ -623,4 +632,6 @@ export type {
   ImportFileProgress,
   SimpleTrack,
   MoodInsight,
+  GenreRank,
+  TopGenresResponse,
 };

@@ -34,7 +34,7 @@ export default function TopAlbumsCard({ period }: Props) {
   } else if (isError) {
     return (
       <div className="w-[350px]">
-        <CardHeader to={`/chart/top/albums?period=${period}`} isOffset>
+        <CardHeader to={`/chart/top/albums?period=${period}`}>
           {header}
         </CardHeader>
         <p className="error">Error: {error.message}</p>
@@ -45,17 +45,17 @@ export default function TopAlbumsCard({ period }: Props) {
   if (!data.items[0]) {
     return (
       <div className="w-[350px]">
-        <CardHeader to={`/chart/top/albums?period=${period}`} isOffset>
+        <CardHeader to={`/chart/top/albums?period=${period}`}>
           {header}
         </CardHeader>
-        <p className="ml-6 mt-6">Nothing to show</p>
+        <p className="mt-6">Nothing to show</p>
       </div>
     );
   }
 
   return (
     <div>
-      <CardHeader to={`/chart/top/albums?period=${period}`} isOffset>
+      <CardHeader to={`/chart/top/albums?period=${period}`}>
         {header}
       </CardHeader>
       <div className="max-w-[350px] card">

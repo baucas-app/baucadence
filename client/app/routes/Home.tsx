@@ -1,13 +1,12 @@
 import type { Route } from "./+types/Home";
 import TopTracks from "~/components/TopTracks";
 import LastPlayed from "~/components/LastPlayed";
-import ActivityGrid from "~/components/ActivityGrid";
 import TopArtistsCard from "~/components/TopArtistsCard";
-import AllTimeStats from "~/components/AllTimeStats";
 import { useState } from "react";
 import PeriodSelector from "~/components/PeriodSelector";
 import { useAppContext } from "~/providers/AppProvider";
 import TopAlbumsCard from "~/components/TopAlbumsCard";
+import TopGenresCard from "~/components/TopGenresCard";
 import PinnedItemGrid from "~/components/PinnedItemGrid";
 import DailyListensChart from "~/components/DailyListensChart";
 import MoodInsightCard from "~/components/MoodInsightCard";
@@ -30,11 +29,7 @@ export default function Home() {
   return (
     <main className="flex grow justify-center pb-4 w-full">
       <div className="flex-1 flex flex-col items-center gap-10 md:gap-12 min-h-0 mt-8 sm:mt-10 mx-4 sm:mx-10">
-        <div className="flex flex-col lg:flex-row gap-10 md:gap-20">
-          <AllTimeStats />
-          <ActivityGrid configurable />
-        </div>
-        <div className="flex flex-col items-stretch gap-10">
+        <div className="flex flex-col items-stretch gap-10 w-full">
           <DailyListensChart />
           <PeriodSelector
             setter={setPeriod}
@@ -45,6 +40,7 @@ export default function Home() {
             {/*<PinnedItemGrid />*/}
             <TopArtistsCard period={period} />
             <TopAlbumsCard period={period} />
+            <TopGenresCard period={period} />
             <MoodInsightCard period={period} />
             <TopTracks
               period={period}

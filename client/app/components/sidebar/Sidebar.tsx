@@ -1,4 +1,4 @@
-import { ExternalLink, History, Home, Info } from "lucide-react";
+import { BarChart3, ExternalLink, History, Home, Info } from "lucide-react";
 import SidebarSearch from "./SidebarSearch";
 import SidebarItem from "./SidebarItem";
 import SidebarSettings from "./SidebarSettings";
@@ -52,6 +52,15 @@ export default function Sidebar() {
           modal={<></>}
         >
           <History size={iconSize} />
+        </SidebarItem>
+        <SidebarItem
+          space={10}
+          to="/all-time"
+          name="All Time"
+          onClick={() => {}}
+          modal={<></>}
+        >
+          <BarChart3 size={iconSize} />
         </SidebarItem>
       </div>
       <div className="flex gap-4 sm:flex-col">

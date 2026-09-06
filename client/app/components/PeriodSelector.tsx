@@ -15,14 +15,15 @@ export default function PeriodSelector({
 }: Props) {
   const periods = ["day", "week", "month", "year", "all_time"];
 
-  const periodDisplay = (str: string) => {
-    return str.split("_").map((w) =>
-      w
-        .split("")
-        .map((char, index) => (index === 0 ? char.toUpperCase() : char))
-        .join(""),
-    )[0];
+  const shortLabels: Record<string, string> = {
+    day: "D",
+    week: "W",
+    month: "M",
+    year: "Y",
+    all_time: "Max",
   };
+
+  const periodDisplay = (str: string) => shortLabels[str] ?? str;
 
   const setPeriod = (val: string) => {
     setter(val);
@@ -47,14 +48,14 @@ export default function PeriodSelector({
 
   return (
     <div
-      className={`flex gap-2 grow-0 text-sm sm:text-[16px] px-3 sm:px-6 py-2 card ${className ?? ""}`}
+      className={`flex gap-5 sm:gap-6 grow-0 text-sm sm:text-[16px] px-4 sm:px-6 py-2 card ${className ?? ""}`}
     >
-      {periods.map((p, i) => (
+      {periods.map((p) => (
         <div key={`period_setter_${p}`}>
           <button
-            className={`uppercase period-selector ${
+            className={`period-selector ${
               p === current ? "color-fg" : "color-fg-tertiary"
-            } ${i !== periods.length - 1 ? "pr-8" : ""}`}
+            }`}
             onClick={() => setPeriod(p)}
             disabled={p === current}
           >

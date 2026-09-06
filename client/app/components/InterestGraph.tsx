@@ -16,7 +16,11 @@ const RANGES = [
 
 type RangeKey = (typeof RANGES)[number]["key"];
 
-const formatTick = (value: string | Date, showTime: boolean) =>
+const formatTick = (
+  value: string | Date,
+  showTime: boolean,
+  showYear: boolean = false,
+) =>
   showTime
     ? new Date(value).toLocaleTimeString(undefined, {
         hour: "2-digit",
@@ -25,9 +29,14 @@ const formatTick = (value: string | Date, showTime: boolean) =>
     : new Date(value).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
+        ...(showYear ? { year: "numeric" } : {}),
       });
 
-const formatRange = (bucket: InterestBucket, showTime: boolean) => {
+const formatRange = (
+  bucket: InterestBucket,
+  showTime: boolean,
+  showYear: boolean,
+) => {
   const start = new Date(bucket.bucket_start);
   const end = new Date(bucket.bucket_end);
   if (showTime) {
@@ -40,17 +49,19 @@ const formatRange = (bucket: InterestBucket, showTime: boolean) => {
       year: "numeric",
     });
   }
-  return `${formatTick(start, false)} – ${formatTick(end, false)}`;
+  return `${formatTick(start, false, showYear)} – ${formatTick(end, false, showYear)}`;
 };
 
 function InterestTooltip({
   active,
   payload,
   showTime,
+  showYear,
 }: {
   active?: boolean;
   payload?: { payload: InterestBucket }[];
   showTime: boolean;
+  showYear: boolean;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -59,7 +70,7 @@ function InterestTooltip({
   return (
     <div className="card px-3 py-2 text-[12px]">
       <div className="text-(--color-fg-secondary)">
-        {formatRange(bucket, showTime)}
+        {formatRange(bucket, showTime, showYear)}
       </div>
       <div className="font-medium">
         {bucket.listen_count} {bucket.listen_count === 1 ? "listen" : "listens"}
@@ -128,6 +139,10 @@ export default function InterestGraph({ type, id }: Props) {
   const { theme } = useTheme();
   const color = theme.primary;
   const showTime = range === "D";
+  const showYear =
+    !!data &&
+    data.length > 0 &&
+    new Set(data.map((b) => new Date(b.bucket_start).getFullYear())).size > 1;
 
   const title = "Interest over time";
 
@@ -179,7 +194,7 @@ export default function InterestGraph({ type, id }: Props) {
           </defs>
           <XAxis
             dataKey="bucket_start"
-            tickFormatter={(v) => formatTick(v, showTime)}
+            tickFormatter={(v) => formatTick(v, showTime, showYear)}
             tick={{ fill: "var(--color-fg-secondary)", fontSize: 11 }}
             tickLine={false}
             axisLine={{ stroke: "var(--color-bg-tertiary)" }}
@@ -195,7 +210,7 @@ export default function InterestGraph({ type, id }: Props) {
             width={28}
           />
           <Tooltip
-            content={<InterestTooltip showTime={showTime} />}
+            content={<InterestTooltip showTime={showTime} showYear={showYear} />}
             cursor={{ stroke: "var(--color-bg-tertiary)", strokeWidth: 1 }}
           />
           <Area
