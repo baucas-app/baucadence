@@ -41,7 +41,7 @@ export default function Home() {
             current={period}
             className="self-center"
           />
-          <div className="container justify-center flex flex-wrap gap-10">
+          <div className="justify-center flex flex-wrap gap-10">
             {/*<PinnedItemGrid />*/}
             <TopArtistsCard period={period} />
             <TopAlbumsCard period={period} />
