@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
+  Area,
+  AreaChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -90,8 +89,19 @@ export default function DailyListensChart() {
       <CardHeader isOffset>{title}</CardHeader>
       <div className="w-full h-[260px] text-[12px] p-6 card">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={sorted} margin={{ top: 10, right: 8, left: -20 }}>
-            <CartesianGrid vertical={false} stroke="var(--color-bg-tertiary)" />
+          <AreaChart data={sorted} margin={{ top: 10, right: 8, left: -20 }}>
+            <defs>
+              <linearGradient
+                id="dailyListensGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop offset="5%" stopColor={color} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <XAxis
               dataKey="start_time"
               tickFormatter={formatDate}
@@ -102,23 +112,36 @@ export default function DailyListensChart() {
             />
             <YAxis
               allowDecimals={false}
+              domain={[0, "dataMax"]}
+              tickCount={3}
               tick={{ fill: "var(--color-fg-secondary)", fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              width={36}
+              width={28}
             />
             <Tooltip
               content={<DailyListensTooltip />}
-              cursor={{ fill: "var(--color-bg-tertiary)", opacity: 0.4 }}
+              cursor={{ stroke: "var(--color-bg-tertiary)", strokeWidth: 1 }}
             />
-            <Bar
+            <Area
               dataKey="listens"
-              fill={color}
-              radius={[3, 3, 0, 0]}
-              maxBarSize={14}
-              isAnimationActive={false}
+              type="natural"
+              stroke="none"
+              fill="url(#dailyListensGradient)"
+              animationDuration={0}
+              activeDot={false}
             />
-          </BarChart>
+            <Area
+              dataKey="listens"
+              type="natural"
+              stroke={color}
+              fill="none"
+              strokeWidth={2}
+              animationDuration={0}
+              dot={false}
+              activeDot={{ r: 4, fill: color, stroke: "var(--color-bg)" }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

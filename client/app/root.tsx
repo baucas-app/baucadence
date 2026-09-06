@@ -17,6 +17,7 @@ import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/Footer";
 import LoginPage from "./components/LoginPage";
 import { AppProvider, useAppContext } from "./providers/AppProvider";
+import ImportProgressToast from "./components/ImportProgressToast";
 import { initTimezoneCookie } from "./tz";
 
 initTimezoneCookie();
@@ -105,6 +106,7 @@ function AppShell() {
         <Outlet />
         <Footer />
       </div>
+      <ImportProgressToast />
     </div>
   );
 }

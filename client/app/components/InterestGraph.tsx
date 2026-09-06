@@ -1,14 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch, type InterestBucket } from "api/api";
 import { useTheme } from "~/hooks/useTheme";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { Area, AreaChart, XAxis, YAxis, Tooltip } from "recharts";
 import CardHeader from "./primitives/CardHeader";
 
 const formatTick = (value: string | Date) =>
@@ -114,7 +107,6 @@ export default function InterestGraph({ buckets = 16, type, id }: Props) {
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="var(--color-bg-tertiary)" />
           <XAxis
             dataKey="bucket_start"
             tickFormatter={formatTick}
@@ -125,10 +117,12 @@ export default function InterestGraph({ buckets = 16, type, id }: Props) {
           />
           <YAxis
             allowDecimals={false}
+            domain={[0, "dataMax"]}
+            tickCount={3}
             tick={{ fill: "var(--color-fg-secondary)", fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            width={36}
+            width={28}
           />
           <Tooltip
             content={<InterestTooltip />}

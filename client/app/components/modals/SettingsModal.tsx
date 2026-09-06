@@ -47,20 +47,15 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 API Keys
               </TabsTrigger>
               <TabsTrigger className={triggerClasses} value="Export">
-                Export
+                {user.role === "admin" ? "Import & Export" : "Export"}
               </TabsTrigger>
               <TabsTrigger className={triggerClasses} value="Sources">
                 Sources
               </TabsTrigger>
               {user.role === "admin" && (
-                <>
-                  <TabsTrigger className={triggerClasses} value="Users">
-                    Users
-                  </TabsTrigger>
-                  <TabsTrigger className={triggerClasses} value="Import">
-                    Import
-                  </TabsTrigger>
-                </>
+                <TabsTrigger className={triggerClasses} value="Users">
+                  Users
+                </TabsTrigger>
               )}
             </>
           )}
@@ -84,9 +79,6 @@ export default function SettingsModal({ open, setOpen }: Props) {
         <TabsContent value="API Keys" className={contentClasses}>
           <ApiKeysModal />
         </TabsContent>
-        <TabsContent value="Export" className={contentClasses}>
-          <ExportModal />
-        </TabsContent>
         <TabsContent value="Sources" className={contentClasses}>
           <SourcesModal />
         </TabsContent>
@@ -95,8 +87,15 @@ export default function SettingsModal({ open, setOpen }: Props) {
             <TabsContent value="Users" className={contentClasses}>
               <UsersModal />
             </TabsContent>
-            <TabsContent value="Import" className={contentClasses}>
-              <ImportModal />
+            <TabsContent value="Export" className={contentClasses}>
+              <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+                <div className="lg:flex-1">
+                  <ExportModal />
+                </div>
+                <div className="lg:flex-1">
+                  <ImportModal />
+                </div>
+              </div>
             </TabsContent>
           </>
         )}
