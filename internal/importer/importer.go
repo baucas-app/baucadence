@@ -13,6 +13,19 @@ import (
 	"github.com/gabehf/koito/internal/mbz"
 )
 
+// isYoutubeTakeoutHTML reports whether name is the HTML variant of a
+// Google Takeout "YouTube and YouTube Music" watch-history export -
+// "watch-history.html" in English, "Wiedergabeverlauf.html" in German
+// (Takeout names the file per the account's language, unlike the JSON
+// output which is always "watch-history.json" regardless of locale).
+func isYoutubeTakeoutHTML(name string) bool {
+	lower := strings.ToLower(name)
+	if !strings.HasSuffix(lower, ".html") {
+		return false
+	}
+	return strings.Contains(lower, "watch-history") || strings.Contains(lower, "wiedergabeverlauf")
+}
+
 // RecognizeFilename reports whether name matches one of the supported
 // export file naming conventions (used both by the startup import
 // directory scan and by the web upload endpoint, so a file is only ever
@@ -24,7 +37,8 @@ func RecognizeFilename(name string) bool {
 		strings.Contains(name, "recenttracks"),
 		strings.Contains(name, "listenbrainz"),
 		strings.Contains(name, "koito"),
-		strings.Contains(name, "watch-history"):
+		strings.Contains(name, "watch-history"),
+		isYoutubeTakeoutHTML(name):
 		return true
 	default:
 		return false
@@ -46,7 +60,7 @@ func SourceLabel(name string) string {
 		return "ListenBrainz"
 	case strings.Contains(name, "koito"):
 		return "Koito"
-	case strings.Contains(name, "watch-history"):
+	case isYoutubeTakeoutHTML(name), strings.Contains(name, "watch-history"):
 		return "YouTube / YouTube Music"
 	default:
 		return ""
@@ -74,6 +88,9 @@ func DetectAndImportFile(ctx context.Context, store importStore, mbzc mbz.MusicB
 	case strings.Contains(filename, "koito"):
 		l.Info().Msgf("Importer: Import file %s detecting as being Koito export", filename)
 		return ImportKoitoFile(ctx, store, filename)
+	case isYoutubeTakeoutHTML(filename):
+		l.Info().Msgf("Importer: Import file %s detecting as being a Google Takeout YouTube export (HTML)", filename)
+		return ImportYoutubeTakeoutHTMLFile(ctx, store, mbzc, filename)
 	case strings.Contains(filename, "watch-history"):
 		l.Info().Msgf("Importer: Import file %s detecting as being a Google Takeout YouTube export", filename)
 		return ImportYoutubeTakeoutFile(ctx, store, mbzc, filename)

@@ -25,8 +25,8 @@ export default function ImportModal() {
         />
         <ImportSourceUploader
           title="YouTube / YouTube Music"
-          description={`Your "YouTube and YouTube Music" export from Google Takeout (watch-history.json).`}
-          accept=".zip,.json"
+          description={`Your "YouTube and YouTube Music" export from Google Takeout, JSON or HTML format (watch-history.json / watch-history.html).`}
+          accept=".zip,.json,.html"
           onUploaded={summary.refetch}
         />
         <ImportSourceUploader
