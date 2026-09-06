@@ -125,7 +125,7 @@ export default function DailyListensChart() {
             />
             <Area
               dataKey="listens"
-              type="natural"
+              type="monotone"
               stroke="none"
               fill="url(#dailyListensGradient)"
               animationDuration={0}
@@ -133,7 +133,7 @@ export default function DailyListensChart() {
             />
             <Area
               dataKey="listens"
-              type="natural"
+              type="monotone"
               stroke={color}
               fill="none"
               strokeWidth={2}

@@ -200,7 +200,7 @@ export default function InterestGraph({ type, id }: Props) {
           />
           <Area
             dataKey="listen_count"
-            type="natural"
+            type="monotone"
             stroke="none"
             fill="url(#colorGradient)"
             animationDuration={0}
@@ -209,7 +209,7 @@ export default function InterestGraph({ type, id }: Props) {
           />
           <Area
             dataKey="listen_count"
-            type="natural"
+            type="monotone"
             stroke={color}
             fill="none"
             strokeWidth={2}
