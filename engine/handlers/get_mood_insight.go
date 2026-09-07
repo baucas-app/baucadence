@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/db"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/models"
@@ -30,12 +29,23 @@ type trackMoodScore struct {
 	score float64
 }
 
-func GetMoodInsightHandler(store db.TrackStore) func(w http.ResponseWriter, r *http.Request) {
+type moodStore interface {
+	db.TrackStore
+	db.SettingsStore
+}
+
+func GetMoodInsightHandler(store moodStore) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
 
-		if cfg.LastFMApiKey() == "" {
+		lastfmKey, err := moodtags.ResolveApiKey(ctx, store)
+		if err != nil {
+			l.Err(err).Msg("GetMoodInsightHandler: Failed to resolve LastFM API key")
+			utils.WriteError(w, "failed to get mood insight", http.StatusInternalServerError)
+			return
+		}
+		if lastfmKey == "" {
 			utils.WriteJSON(w, http.StatusOK, MoodInsight{Enabled: false})
 			return
 		}

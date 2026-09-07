@@ -122,6 +122,14 @@ type ExportStore interface {
 	GetExportPage(ctx context.Context, opts GetExportPageOpts) ([]*ExportItem, error)
 }
 
+// SettingsStore persists small admin-configurable instance settings (e.g.
+// a LastFM API key entered via the Settings UI) that would otherwise only
+// be configurable through an environment variable requiring a restart.
+type SettingsStore interface {
+	GetSetting(ctx context.Context, key string) (string, error)
+	SetSetting(ctx context.Context, key, value string) error
+}
+
 type DB interface {
 	ArtistStore
 	AlbumStore
@@ -131,6 +139,7 @@ type DB interface {
 	UserStore
 	ImageStore
 	ExportStore
+	SettingsStore
 	Ping(ctx context.Context) error
 	Close(ctx context.Context)
 	PurgeAllData(ctx context.Context) error

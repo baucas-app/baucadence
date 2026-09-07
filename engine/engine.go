@@ -255,9 +255,11 @@ func Run(
 	go catalog.FetchMissingArtistImages(ctx, store)
 	l.Info().Msg("Engine: Attempting to fetch missing album images")
 	go catalog.FetchMissingAlbumImages(ctx, store)
-	if cfg.LastFMApiKey() != "" {
+	if lastfmKey, err := moodtags.ResolveApiKey(ctx, store); err != nil {
+		l.Err(err).Msg("Engine: Failed to resolve LastFM API key; skipping mood tag backfill")
+	} else if lastfmKey != "" {
 		l.Info().Msg("Engine: Running mood tag backfill task")
-		go moodtags.BackfillTrackTags(ctx, store, moodtags.NewClient())
+		go moodtags.BackfillTrackTags(ctx, store, moodtags.NewClient(lastfmKey))
 	}
 	l.Info().Msg("Engine: Starting enabled scrobble source connectors")
 	sources.StartPollers(ctx, store, mbzC)

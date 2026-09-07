@@ -6,6 +6,9 @@ import {
   getYoutubeStatus,
   connectYoutube,
   disconnectYoutube,
+  getLastfmStatus,
+  connectLastfm,
+  disconnectLastfm,
 } from "api/api";
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
@@ -201,6 +204,84 @@ function YoutubeSection() {
   );
 }
 
+function LastfmSection() {
+  const queryClient = useQueryClient();
+  const [apiKey, setApiKey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const { data, isPending } = useQuery({
+    queryKey: ["source-status", "lastfm"],
+    queryFn: getLastfmStatus,
+  });
+
+  const handleConnect = () => {
+    setError(undefined);
+    if (!apiKey.trim()) {
+      setError("paste your LastFM API key first");
+      return;
+    }
+    setLoading(true);
+    connectLastfm(apiKey.trim())
+      .then(() => {
+        setApiKey("");
+        queryClient.invalidateQueries({ queryKey: ["source-status", "lastfm"] });
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  const handleDisconnect = () => {
+    setLoading(true);
+    disconnectLastfm().finally(() => {
+      setLoading(false);
+      queryClient.invalidateQueries({ queryKey: ["source-status", "lastfm"] });
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <SubHeader className="!mb-0">LastFM</SubHeader>
+        {!isPending && <StatusBadge connected={!!data?.connected} />}
+      </div>
+      <p className="text-sm text-(--color-fg-secondary)">
+        Powers the Top Genres and Mood insight cards, computed from LastFM's
+        community tag data for tracks in your library. Get a free API key
+        from{" "}
+        <a
+          className="underline"
+          href="https://www.last.fm/api/account/create"
+          target="_blank"
+          rel="noreferrer"
+        >
+          last.fm/api/account/create
+        </a>{" "}
+        (only the API key is needed, not the shared secret).
+      </p>
+      {data?.connected ? (
+        <AsyncButton loading={loading} onClick={handleDisconnect} confirm danger>
+          Disconnect
+        </AsyncButton>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            className="fg bg rounded-md p-3 text-sm font-mono"
+            placeholder="Paste your LastFM API key here"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <AsyncButton loading={loading} onClick={handleConnect}>
+            Connect LastFM
+          </AsyncButton>
+          {error && <p className="error">{error}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function JellyfinSection() {
   const webhookUrl =
     typeof window !== "undefined"
@@ -249,6 +330,8 @@ export default function SourcesModal() {
       <SpotifySection />
       <hr className="border-(--color-border)" />
       <YoutubeSection />
+      <hr className="border-(--color-border)" />
+      <LastfmSection />
       <hr className="border-(--color-border)" />
       <JellyfinSection />
     </div>

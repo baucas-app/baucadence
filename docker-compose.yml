@@ -36,7 +36,9 @@ services:
       # SCROBLLI_YTMUSIC_TRACK_VIDEOS above is the fallback (all-or-nothing). ---
       - SCROBLLI_YOUTUBE_DATA_API_KEY=
 
-      # --- LastFM (optional; enables artist/album art fallback and the homepage
-      # mood insight card). Get a free key at last.fm/api/account/create ---
+      # --- LastFM (optional; enables Top Genres and the mood insight card).
+      # Can also be set from the app's Settings > Sources tab instead of here -
+      # that takes priority over this value and needs no restart to apply.
+      # Get a free key at last.fm/api/account/create ---
       - KOITO_LASTFM_API_KEY=
     restart: unless-stopped

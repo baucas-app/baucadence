@@ -5,10 +5,10 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/gabehf/koito/internal/cfg"
 	"github.com/gabehf/koito/internal/db"
 	"github.com/gabehf/koito/internal/logger"
 	"github.com/gabehf/koito/internal/models"
+	"github.com/gabehf/koito/internal/moodtags"
 	"github.com/gabehf/koito/internal/utils"
 )
 
@@ -37,12 +37,23 @@ type genreAgg struct {
 	listenCount int64
 }
 
-func GetTopGenresHandler(store db.TrackStore) func(w http.ResponseWriter, r *http.Request) {
+type genreStore interface {
+	db.TrackStore
+	db.SettingsStore
+}
+
+func GetTopGenresHandler(store genreStore) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
 
-		if cfg.LastFMApiKey() == "" {
+		lastfmKey, err := moodtags.ResolveApiKey(ctx, store)
+		if err != nil {
+			l.Err(err).Msg("GetTopGenresHandler: Failed to resolve LastFM API key")
+			utils.WriteError(w, "failed to get top genres", http.StatusInternalServerError)
+			return
+		}
+		if lastfmKey == "" {
 			utils.WriteJSON(w, http.StatusOK, TopGenresResponse{Enabled: false, Genres: []GenreRank{}})
 			return
 		}

@@ -388,6 +388,36 @@ function disconnectYoutube(): Promise<Response> {
   return fetch(`/apis/sources/v1/youtube`, { method: "DELETE" });
 }
 
+async function getLastfmStatus(): Promise<SourceStatus> {
+  const r = await fetch(`/apis/web/v1/settings/lastfm/status`);
+  return handleJson<SourceStatus>(r);
+}
+async function connectLastfm(apiKey: string): Promise<Response> {
+  const r = await fetch(`/apis/web/v1/settings/lastfm/connect`, {
+    method: "POST",
+    body: JSON.stringify({ api_key: apiKey }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!r.ok) {
+    let errorMessage = `error: ${r.status}`;
+    try {
+      const errorData: ApiError = await r.json();
+      if (errorData && typeof errorData.error === "string") {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      console.error("unexpected api error:", e);
+    }
+    throw new Error(errorMessage);
+  }
+  return r;
+}
+function disconnectLastfm(): Promise<Response> {
+  return fetch(`/apis/web/v1/settings/lastfm`, { method: "DELETE" });
+}
+
 async function getRewindStats(args: timeframe): Promise<RewindStats> {
   const r = await fetch(
     `/apis/web/v1/summary?week=${args.week}&month=${args.month}&year=${args.year}&from=${args.from}&to=${args.to}`,
@@ -433,6 +463,9 @@ export {
   getYoutubeStatus,
   connectYoutube,
   disconnectYoutube,
+  getLastfmStatus,
+  connectLastfm,
+  disconnectLastfm,
 };
 export type { SourceStatus };
 type ImageList = {

@@ -26,9 +26,12 @@ type Client struct {
 	requestQueue *queue.RequestQueue
 }
 
-func NewClient() *Client {
+// NewClient builds a LastFM client for the given API key. The key is
+// passed in explicitly (see ResolveApiKey) rather than read from cfg here,
+// since it may come from the Settings UI instead of the environment.
+func NewClient(apiKey string) *Client {
 	return &Client{
-		apiKey:       cfg.LastFMApiKey(),
+		apiKey:       apiKey,
 		baseUrl:      lastFMApiBaseUrl,
 		userAgent:    cfg.UserAgent(),
 		requestQueue: queue.NewRequestQueue(5, 5),
@@ -39,10 +42,36 @@ func (c *Client) Shutdown() {
 	c.requestQueue.Shutdown()
 }
 
-// LastFM JSON uses string counts and wraps the tag list under "toptags"
+// LastFM JSON wraps the tag list under "toptags". The "count" field is
+// documented as a string but LastFM's API inconsistently returns it as a
+// bare JSON number for some tracks, so it's parsed through flexibleCount
+// rather than a plain string to tolerate both.
 type lastFMTag struct {
-	Name  string `json:"name"`
-	Count string `json:"count"`
+	Name  string        `json:"name"`
+	Count flexibleCount `json:"count"`
+}
+
+// flexibleCount unmarshals a LastFM count field that may arrive as either
+// a JSON string ("123") or a bare JSON number (123).
+type flexibleCount int
+
+func (f *flexibleCount) UnmarshalJSON(data []byte) error {
+	var asInt int
+	if err := json.Unmarshal(data, &asInt); err == nil {
+		*f = flexibleCount(asInt)
+		return nil
+	}
+	var asStr string
+	if err := json.Unmarshal(data, &asStr); err != nil {
+		return fmt.Errorf("flexibleCount: %w", err)
+	}
+	n, err := strconv.Atoi(asStr)
+	if err != nil {
+		*f = 0
+		return nil
+	}
+	*f = flexibleCount(n)
+	return nil
 }
 
 type lastFMTopTagsResponse struct {
@@ -109,7 +138,7 @@ func (c *Client) getTopTags(ctx context.Context, method string, params url.Value
 
 	tags := make([]db.TagWeight, 0, len(resp.Toptags.Tag))
 	for _, t := range resp.Toptags.Tag {
-		weight, _ := strconv.Atoi(t.Count)
+		weight := int(t.Count)
 		if t.Name == "" || weight <= 0 {
 			continue
 		}

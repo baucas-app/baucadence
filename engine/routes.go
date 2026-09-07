@@ -144,6 +144,10 @@ func bindRoutes(
 			r.Get("/export", handlers.ExportHandler(db))
 			r.Delete("/data", handlers.PurgeAllDataHandler(db))
 
+			r.Get("/settings/lastfm/status", handlers.GetLastFMStatusHandler(db))
+			r.Post("/settings/lastfm/connect", handlers.ConnectLastFMHandler(db))
+			r.Delete("/settings/lastfm", handlers.DisconnectLastFMHandler(db))
+
 			r.With(chimiddleware.RequestSize(300<<20)).
 				Post("/import", handlers.UploadImportHandler(
 					importer.RecognizeFilename,
