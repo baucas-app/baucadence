@@ -7,6 +7,9 @@ import {
   type VideoWatch,
 } from "api/api";
 import VideosTable from "~/components/VideosTable";
+import TopVideoChannelsCard from "~/components/TopVideoChannelsCard";
+import VideoFormatSplitCard from "~/components/VideoFormatSplitCard";
+import VideoActivityChart from "~/components/VideoActivityChart";
 
 export function meta() {
   return [
@@ -20,9 +23,9 @@ type FormatFilter = "" | "video" | "short";
 const getVideos = (args: { limit: number; page: number; format: string }) =>
   apiFetch<PaginatedResponse<VideoWatch>>("/apis/web/v1/videos", args);
 
-const getVideoCategories = () =>
+const getVideoCategories = (period: string) =>
   apiFetch<VideoCategoryCount[]>("/apis/web/v1/insights/video-categories", {
-    period: "all_time",
+    period,
   });
 
 function VideoCategoryBreakdown({
@@ -35,11 +38,11 @@ function VideoCategoryBreakdown({
   const top = categories.slice(0, 8);
 
   return (
-    <div className="card p-6 flex flex-col gap-3 w-full">
+    <div className="card p-6 flex flex-col gap-3 w-[350px]">
       <div className="font-medium">Categories</div>
       {top.map((c) => (
         <div key={c.category} className="flex items-center gap-3">
-          <span className="w-36 shrink-0 truncate text-[13px]">
+          <span className="w-24 shrink-0 truncate text-[13px]">
             {c.category}
           </span>
           <div className="flex-1 h-2 rounded-full bg-(--color-bg-tertiary) overflow-hidden">
@@ -60,6 +63,7 @@ function VideoCategoryBreakdown({
 export default function Videos() {
   const [page, setPage] = useState(1);
   const [format, setFormat] = useState<FormatFilter>("");
+  const [period, setPeriod] = useState("week");
 
   const { isPending, isError, data, error } = useQuery({
     queryKey: ["videos", page, format],
@@ -67,8 +71,8 @@ export default function Videos() {
   });
 
   const { data: categories } = useQuery({
-    queryKey: ["insights/video-categories"],
-    queryFn: getVideoCategories,
+    queryKey: ["insights/video-categories", period],
+    queryFn: () => getVideoCategories(period),
   });
 
   const setFormatFilter = (f: FormatFilter) => {
@@ -79,12 +83,18 @@ export default function Videos() {
   return (
     <main className="flex grow justify-center pb-4 w-full">
       <div className="flex-1 flex flex-col items-center gap-8 min-h-0 mt-8 sm:mt-10 mx-4 sm:mx-10">
-        <div className="flex flex-col gap-5 text-sm md:text-[16px] w-11/12 max-w-[1000px]">
+        <div className="flex flex-col gap-8 text-sm md:text-[16px] w-11/12 max-w-[1000px]">
           <h1>Videos</h1>
 
-          {categories && categories.length > 0 && (
-            <VideoCategoryBreakdown categories={categories} />
-          )}
+          <VideoActivityChart period={period} setPeriod={setPeriod} />
+
+          <div className="justify-center flex flex-wrap gap-10">
+            <TopVideoChannelsCard period={period} />
+            <VideoFormatSplitCard period={period} />
+            {categories && categories.length > 0 && (
+              <VideoCategoryBreakdown categories={categories} />
+            )}
+          </div>
 
           <div className="flex gap-2">
             {(["", "video", "short"] as FormatFilter[]).map((f) => (

@@ -38,6 +38,36 @@ type VideoCategoryCount struct {
 	Count    int64  `json:"count"`
 }
 
+// VideoChannelRank is one row of the "most watched YouTube channels" card.
+// Thumbnail is the thumbnail of the channel's most-watched video in the
+// period, standing in for a channel avatar (which isn't fetched/stored).
+type VideoChannelRank struct {
+	Rank        int    `json:"rank"`
+	ChannelID   string `json:"channel_id"`
+	ChannelName string `json:"channel_name"`
+	WatchCount  int64  `json:"watch_count"`
+	Thumbnail   string `json:"thumbnail"`
+}
+
+type VideoFormatSplit struct {
+	Longform  int64 `json:"longform"`
+	Shortform int64 `json:"shortform"`
+}
+
+// VideoDailyFormatCount is one (day, format) count, as returned raw from
+// the database before being bucketed into chart steps by the handler.
+type VideoDailyFormatCount struct {
+	Date   time.Time
+	Format string
+	Count  int64
+}
+
+type VideoActivityItem struct {
+	Start     time.Time `json:"start_time"`
+	Longform  int64     `json:"longform"`
+	Shortform int64     `json:"shortform"`
+}
+
 type ExportItem struct {
 	ListenedAt         time.Time
 	UserID             int32

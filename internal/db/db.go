@@ -91,6 +91,9 @@ type VideoStore interface {
 	SaveVideoWatch(ctx context.Context, opts SaveVideoWatchOpts) error
 	GetVideoWatchesPaginated(ctx context.Context, opts GetItemsOpts) (*PaginatedResponse[*models.VideoWatch], error)
 	GetVideoCategoryCounts(ctx context.Context, timeframe Timeframe) ([]VideoCategoryCount, error)
+	GetTopVideoChannels(ctx context.Context, timeframe Timeframe, limit int) ([]VideoChannelRank, error)
+	GetVideoFormatSplit(ctx context.Context, timeframe Timeframe) (VideoFormatSplit, error)
+	GetVideoDailyFormatCounts(ctx context.Context, from, to time.Time) ([]VideoDailyFormatCount, error)
 }
 
 type UserStore interface {

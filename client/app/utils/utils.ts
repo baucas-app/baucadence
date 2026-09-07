@@ -148,11 +148,34 @@ function blendColors(hex1: string, hex2: string, t: number): string {
   return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
+// Maps the D/W/M/Y/Max period pills to a chart step + range, coarsening
+// granularity as the range widens so trend charts stay readable instead of
+// showing a single-day-sized window for "Max".
+function periodToStepRange(
+  period: string,
+): { step: "day" | "week" | "month" | "year"; range: number } {
+  switch (period) {
+    case "day":
+      return { step: "day", range: 30 };
+    case "week":
+      return { step: "day", range: 90 };
+    case "month":
+      return { step: "week", range: 26 };
+    case "year":
+      return { step: "month", range: 24 };
+    case "all_time":
+      return { step: "month", range: 60 };
+    default:
+      return { step: "day", range: 90 };
+  }
+}
+
 export {
   hexToHSL,
   timeListenedString,
   getRewindYear,
   getRewindParams,
   blendColors,
+  periodToStepRange,
 };
 export type { hsl };

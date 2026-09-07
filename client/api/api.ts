@@ -655,6 +655,28 @@ type TopGenresResponse = {
   enabled: boolean;
   genres: GenreRank[];
 };
+type GenreTrack = SimpleTrack & {
+  listen_count: number;
+};
+type VideoChannelRank = {
+  rank: number;
+  channel_id: string;
+  channel_name: string;
+  watch_count: number;
+  thumbnail: string;
+};
+type VideoFormatSplit = {
+  longform: number;
+  shortform: number;
+};
+type VideoActivityItem = {
+  start_time: Date;
+  longform: number;
+  shortform: number;
+};
+type VideoActivityResponse = {
+  activity: VideoActivityItem[];
+};
 
 export type {
   getItemsArgs,
@@ -688,4 +710,9 @@ export type {
   Video,
   VideoWatch,
   VideoCategoryCount,
+  GenreTrack,
+  VideoChannelRank,
+  VideoFormatSplit,
+  VideoActivityItem,
+  VideoActivityResponse,
 };

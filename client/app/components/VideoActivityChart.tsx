@@ -7,7 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { apiFetch, type ListenActivityResponse } from "api/api";
+import { apiFetch, type VideoActivityResponse } from "api/api";
 import { useTheme } from "~/hooks/useTheme";
 import CardHeader from "./primitives/CardHeader";
 import PeriodSelector from "./PeriodSelector";
@@ -18,15 +18,10 @@ interface Props {
   setPeriod: (p: string) => void;
 }
 
-const getActivity = (step: string, range: number) =>
-  apiFetch<ListenActivityResponse>("/apis/web/v1/listen-activity", {
+const getVideoActivity = (step: string, range: number) =>
+  apiFetch<VideoActivityResponse>("/apis/web/v1/insights/video-activity", {
     step,
     range,
-    month: 0,
-    year: 0,
-    artist_id: 0,
-    album_id: 0,
-    track_id: 0,
   });
 
 const formatDate = (value: string | Date) =>
@@ -35,12 +30,14 @@ const formatDate = (value: string | Date) =>
     day: "numeric",
   });
 
-function DailyListensTooltip({
+function VideoActivityTooltip({
   active,
   payload,
 }: {
   active?: boolean;
-  payload?: { payload: { start_time: Date; listens: number } }[];
+  payload?: {
+    payload: { start_time: Date; longform: number; shortform: number };
+  }[];
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -55,25 +52,25 @@ function DailyListensTooltip({
           day: "numeric",
         })}
       </div>
-      <div className="font-medium">
-        {point.listens} {point.listens === 1 ? "listen" : "listens"}
-      </div>
+      <div className="font-medium">{point.longform} longform</div>
+      <div className="font-medium">{point.shortform} shorts</div>
     </div>
   );
 }
 
-export default function DailyListensChart({ period, setPeriod }: Props) {
+export default function VideoActivityChart({ period, setPeriod }: Props) {
   const { step, range } = periodToStepRange(period);
 
   const { isPending, isError, data, error } = useQuery({
-    queryKey: ["listen-activity", "daily-chart", step, range],
-    queryFn: () => getActivity(step, range),
+    queryKey: ["insights/video-activity", step, range],
+    queryFn: () => getVideoActivity(step, range),
   });
 
   const { theme } = useTheme();
-  const color = theme.primary;
+  const longformColor = theme.primary;
+  const shortformColor = "var(--color-fg-tertiary)";
 
-  const title = "Listens per day";
+  const title = "Longform vs Shorts per day";
 
   const header = (
     <div className="flex items-center justify-between w-full flex-wrap gap-3">
@@ -83,7 +80,14 @@ export default function DailyListensChart({ period, setPeriod }: Props) {
   );
 
   if (isPending) {
-    return <DailyListensChartSkeleton />;
+    return (
+      <div className="flex flex-col items-start w-full">
+        {header}
+        <div className="w-full h-[260px] p-6 card">
+          <div className="w-full h-full bg rounded-(--border-radius) animate-pulse" />
+        </div>
+      </div>
+    );
   } else if (isError) {
     return (
       <div className="flex flex-col items-start w-full">
@@ -105,15 +109,13 @@ export default function DailyListensChart({ period, setPeriod }: Props) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={sorted} margin={{ top: 10, right: 8, left: -20 }}>
             <defs>
-              <linearGradient
-                id="dailyListensGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="5%" stopColor={color} stopOpacity={0.5} />
-                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              <linearGradient id="longformGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={longformColor} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={longformColor} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="shortformGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={shortformColor} stopOpacity={0.4} />
+                <stop offset="95%" stopColor={shortformColor} stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -134,40 +136,41 @@ export default function DailyListensChart({ period, setPeriod }: Props) {
               width={28}
             />
             <Tooltip
-              content={<DailyListensTooltip />}
+              content={<VideoActivityTooltip />}
               cursor={{ stroke: "var(--color-bg-tertiary)", strokeWidth: 1 }}
             />
             <Area
-              dataKey="listens"
+              dataKey="longform"
               type="monotone"
-              stroke="none"
-              fill="url(#dailyListensGradient)"
-              animationDuration={0}
-              activeDot={false}
-            />
-            <Area
-              dataKey="listens"
-              type="monotone"
-              stroke={color}
-              fill="none"
+              stroke={longformColor}
+              fill="url(#longformGradient)"
               strokeWidth={2}
               animationDuration={0}
               dot={false}
-              activeDot={{ r: 4, fill: color, stroke: "var(--color-bg)" }}
+              activeDot={{ r: 4, fill: longformColor, stroke: "var(--color-bg)" }}
+            />
+            <Area
+              dataKey="shortform"
+              type="monotone"
+              stroke={shortformColor}
+              fill="url(#shortformGradient)"
+              strokeWidth={2}
+              animationDuration={0}
+              dot={false}
+              activeDot={{ r: 4, fill: shortformColor, stroke: "var(--color-bg)" }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </div>
-  );
-}
-
-function DailyListensChartSkeleton() {
-  return (
-    <div className="flex flex-col items-start w-full">
-      <CardHeader isOffset>Listens per day</CardHeader>
-      <div className="w-full h-[260px] p-6 card">
-        <div className="w-full h-full bg rounded-(--border-radius) animate-pulse" />
+      <div className="flex gap-4 mt-2 text-[12px] color-fg-secondary">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full" style={{ background: longformColor }} />
+          Longform
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full" style={{ background: shortformColor }} />
+          Shorts
+        </div>
       </div>
     </div>
   );
